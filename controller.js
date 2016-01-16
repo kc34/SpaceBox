@@ -12,10 +12,10 @@ class Controller {
 		var keynum = window.event ? key_event.keyCode : key_event.which; // window.event = userIsIE
 		var key = String.fromCharCode(keynum);
 		if (key == "&") { // Up arrow
-			my_view.scale /= 2;
+			my_view.scale /= 1.5;
 			console.log(my_view.scale);
 		} else if (key == "(") { // Down arrow
-			my_view.scale *= 2;
+			my_view.scale *= 1.5;
 			console.log(my_view.scale);
 		}
 		console.log(key);

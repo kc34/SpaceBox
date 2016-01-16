@@ -7,8 +7,7 @@ class View {
     }
 
     draw() {
-        ctx.fillStyle = "#000000";
-		ctx.fillRect( 0 , 0 , window.innerWidth , window.innerHeight );
+		this.draw_background();
 		
 		ctx.fillStyle = "#FFFF00";
 		for (var obj in my_model.box) {
@@ -23,4 +22,16 @@ class View {
 			ctx.fill();
 		}
     }
+    
+    draw_background() {
+		var base_image = new Image();
+		base_image.src = 'space_bg.jpg';
+		console.log(base_image);
+		var picture_size = 2000 / this.scale;
+		for (var i = 0; i < window.innerWidth / picture_size; i++) {
+			for (var j = 0; j < window.innerHeight / picture_size; j++) {
+				ctx.drawImage(base_image, i * picture_size, j * picture_size, picture_size, picture_size);
+			}
+		}
+	}
 }
