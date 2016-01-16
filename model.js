@@ -12,7 +12,7 @@
  */
  
 class Model {
-    model() {
+    constructor() {
         this.name = "I am a box." // Placeholder name.
         this.box = [];
     }
@@ -22,6 +22,11 @@ class Model {
     }
     
     add(x, y) {
+		var new_obj = new Object();
+		new_obj.x = x;
+		new_obj.y = y;
 		console.log("A mouse click has been registered at", x, y);
+		this.box.push(new_obj);
+		console.log(this.box);
 	}
 }
