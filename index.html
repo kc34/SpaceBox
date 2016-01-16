@@ -21,8 +21,8 @@ html, body {
 
 <script>
 
-
-
+var my_controller = new Controller();
+var my_view = new View();
 var my_model =  new Model();
 
 /**
@@ -54,25 +54,37 @@ function main() {
         accumulator -= TIME_STEP;
     }
     
-	View.draw(accumulator); // accumulator passed in as a partial frame. For Anti-A purposes
+	my_view.draw(accumulator); // accumulator passed in as a partial frame. For Anti-A purposes
 }
 
 // Borrowed from http://stackoverflow.com/questions/1846599
-function keydown_handler(key){
-		
-	var keynum = window.event ? key.keyCode : key.which; // window.event = userIsIE
-	Controller.keydown_handler(String.fromCharCode(keynum));
-	
+function keydown_handler(key) {
+	my_controller.keydown_handler(key);
 }
 
 function mousedown_handler(event) {
-	Controller.mousedown_handler(event);
+	my_controller.mousedown_handler(event);
+}
+
+function mouseup_handler(event) {
+	my_controller.mouseup_handler(event);
+}
+
+function mousemove_handler(event) {
+	my_controller.mousemove_handler(event);
+}
+
+function click_handler(event) {
+	my_controller.click_handler(event);
 }
 
 var canvas = document.getElementById("myCanvas");
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
-canvas.addEventListener('click', mousedown_handler, false);
+canvas.addEventListener('click', click_handler, false);
+canvas.addEventListener('mousedown', mousedown_handler, false);
+canvas.addEventListener('mouseup', mouseup_handler, false);
+canvas.addEventListener('mousemove', mousemove_handler, false);
 canvas.onmousedown = function(){return false;};
 
 
