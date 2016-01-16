@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<canvas id="myCanvas">
+Your browser does not support the canvas element.
+</canvas>
+
+<style>
+html, body {
+  width:  100%;
+  height: 100%;
+  margin: 0px;
+  overflow: hidden;
+}
+</style>
+
+<script src="model.js"></script>
+<script src="view.js"></script>
+<script src="controller.js"></script>
+
+<script>
+
+
+
+var my_model =  new Model();
+
+/**
+ * Other important global variables (e.g. time-keeping, environment)
+ */
+
+var TIME_STEP = 1.0 / 24; // Time-step. Measured in seconds.
+var total_elapsed_time = 0.0;
+var accumulator = 0.0;
+var current_time = new Date();
+
+/**
+ * Main loop. Runs physics and renderer separately.
+ */
+function main() {
+	
+	new_time = new Date();
+    frame_time = (new_time - current_time) / 1000;
+	
+    if ( frame_time > 0.1 )
+        frame_time = 0.1;
+    current_time = new_time;
+
+    accumulator += frame_time;
+    while ( accumulator >= TIME_STEP )
+    {
+        my_model.update(TIME_STEP);
+        total_elapsed_time += TIME_STEP;
+        accumulator -= TIME_STEP;
+    }
+    
+	View.draw(accumulator); // accumulator passed in as a partial frame. For Anti-A purposes
+}
+
+// Borrowed from http://stackoverflow.com/questions/1846599
+function keydown_handler(key){
+		
+	var keynum = window.event ? key.keyCode : key.which; // window.event = userIsIE
+	Controller.keydown_handler(String.fromCharCode(keynum));
+	
+}
+
+function mousedown_handler(event) {
+	Controller.mousedown_handler(event);
+}
+
+var canvas = document.getElementById("myCanvas");
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+canvas.addEventListener('click', mousedown_handler, false);
+canvas.onmousedown = function(){return false;};
+
+
+ctx = canvas.getContext("2d");
+
+window.addEventListener('keydown', keydown_handler, false);
+
+var mainLooper = setInterval(main, TIME_STEP);
+
+</script>
+
+</body>
+</html>
+
