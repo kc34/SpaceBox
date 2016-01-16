@@ -46,10 +46,10 @@ Sector.prototype.collision_update = function(){
 				var x1 = Sector.bodies[idx].x_position
 				var x2 = Sector.bodies[idx2].x_position
 				var y1 = Sector.bodies[idx].y_position
-				var y2 = Sector.bodies[idx].y_position
+				var y2 = Sector.bodies[idx2].y_position // Remind Kevin to add index.
 				var x_dist = (x1-x2);
 				var y_dist = (y1-y2);
-				var t_dist = Math.pow (Math.pow(x_dist, 2) + Math.pow(y_dist, 2), 0.5); // ** doesn't work i guess.
+				var t_dist = Math.pow(Math.pow(x_dist, 2) + Math.pow(y_dist, 2), 0.5); // ** doesn't work i guess.
 				if ((Sector.bodies[idx].radius + Sector.bodies[idx2].radius) > t_dist){
 					if (typeof(Sector.bodies[idx]) == Star) {
 						Sector.remove(Sector.bodies[idx2]);
@@ -101,7 +101,7 @@ var Body = function(x, y, t, v) {
 var Star = function(x, y, t, v) {
 	Body.call(this, x, y, t, v);
 	this.color = "#FFFF00";
-	this.radius = 80;
+	this.radius = 400;
 }
 
 var Planet = function(x, y, t, v) {
