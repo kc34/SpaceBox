@@ -4,7 +4,8 @@ class Controller {
         this.name = "I am a controller." // Placeholder name.
 		this.mousedown = false;
 		this.last_mouse_location = null;
-		this.mouse_travelled = null;
+		this.last_mouse_time = null;
+		this.mousedown_time = null;
 		this.MOUSE_TRAVEL_THRESHOLD = 10;
     }
 
@@ -29,6 +30,7 @@ class Controller {
 		this.mousedown = true;
 		this.last_mouse_location = { x : event.x, y : event.y }
 		this.mouse_travelled = 0;
+		this.mousedown_time = new Date();
 
 	}
 	
@@ -36,17 +38,23 @@ class Controller {
 		this.mousedown = false;
 		this.mousedown_location = null;
 		
+		var t = new Date();
+		t -= this.mousedown_time;
+		t /= 1000.0;
+		
 		console.log(this.MOUSE_TRAVEL_THRESHOLD);
 		
 		if (this.mouse_travelled < this.MOUSE_TRAVEL_THRESHOLD) {
 			console.log("Star adding");
 			var x = ((event.x - canvas.offsetLeft) - ( window.innerWidth / 2 + my_view.center.x )) * my_view.scale;
 			var y = ((event.y - canvas.offsetTop) - ( window.innerHeight / 2 + my_view.center.y )) * my_view.scale;
-			my_model.add(x,  y);
+
+			my_model.addBody(x, y, t, 0);
 		
 		}
 		
 		console.log("Mouse travel:", this.mouse_travelled);
+		console.log("Mousedown time:", t);
 		this.mouse_travelled = null;
 	}
 	

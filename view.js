@@ -9,11 +9,12 @@ class View {
     draw() {
 		this.draw_background();
 		
-		ctx.fillStyle = "#FFFF00";
-		for (var obj in my_model.box) {
-			var x = (my_view.center.x + window.innerWidth / 2 + my_model.box[obj].x / this.scale);
-			var y = (my_view.center.y + window.innerHeight / 2 + my_model.box[obj].y / this.scale);
-			var radius = 10 / this.scale;
+		var bodies = my_model.get_bodies();
+		for (var obj in bodies) {
+			var x = (my_view.center.x + window.innerWidth / 2 + bodies[obj].x / this.scale);
+			var y = (my_view.center.y + window.innerHeight / 2 + bodies[obj].y / this.scale);
+			ctx.fillStyle = bodies[obj].color;
+			var radius = bodies[obj].radius / this.scale;
 			var startAngle = 0;
 			var endAngle = 2 * Math.PI;
 			var anticlockwise = false;
@@ -26,7 +27,6 @@ class View {
     draw_background() {
 		var base_image = new Image();
 		base_image.src = 'space_bg.jpg';
-		console.log(base_image);
 		var picture_size = 2000 / this.scale;
 		for (var i = 0; i < window.innerWidth / picture_size; i++) {
 			for (var j = 0; j < window.innerHeight / picture_size; j++) {
