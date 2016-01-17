@@ -129,7 +129,7 @@ Sector.prototype.neighbor = function(body) {
 	
 	if (orbitables.length != 0) {
 		for (var idx in orbitables) {
-			var dist = AstroMath.distance(body.x_position, orbitables[idx].x_position, body.y_position, orbitables[idx].y_position);
+			var dist = AstroMath.distance(body.x_position, body.y_position, orbitables[idx].x_position, orbitables[idx].y_position);
 			if (dist != 0){
 				dist_array.push(dist);
 				neighbor_array.push(orbitables[idx]);

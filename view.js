@@ -91,8 +91,8 @@ class View {
     
     draw_background() {
 		var picture_size = 2000 / this.scale;
-		for (var i = -1; i < window.innerWidth / picture_size; i++) {
-			for (var j = -1; j < window.innerHeight / picture_size; j++) {
+		for (var i = -10; i < 10; i++) {
+			for (var j = -10; j < 10; j++) {
 				ctx.drawImage(this.base_image, i * picture_size + this.center.x, j * picture_size + this.center.y, picture_size, picture_size);
 			}
 		}

@@ -18,7 +18,9 @@ class Controller {
 			my_view.scale /= 1.5;
 			console.log(my_view.scale);
 		} else if (key == "(") { // Down arrow
-			my_view.scale *= 1.5;
+			if (my_view.scale < 6) { 
+				my_view.scale *= 1.5;
+			}
 			console.log(my_view.scale);
 		} else if (key == " ") {
 			my_model.running = !(my_model.running);
