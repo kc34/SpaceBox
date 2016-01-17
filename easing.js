@@ -152,6 +152,6 @@ function easeInOutCirc(currentIteration, startValue, changeInValue, totalIterati
 // Custom eases
 
 function easeOutBack(t, b, c, d, s) {
-	if (s == undefined) s = 1.5;
+	if (s == undefined) s = 1.7;
 	return c*((t=t/d-1)*t*((s+1)*t + s) + 1) + b;
 }

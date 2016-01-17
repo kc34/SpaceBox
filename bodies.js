@@ -29,7 +29,7 @@ var Body = function(x, y, t, vx, vy) {
 var Star = function(x, y, t, vx, vy) {
 	Body.call(this, x, y, t, 0, 0);
 	this.type = 'Star';
-	this.mass = 100 * Math.pow(this.radius, 3);
+	this.mass = 200 * Math.pow(this.radius, 3);
 }
 
 var Planet = function(x, y, t, vx, vy) {

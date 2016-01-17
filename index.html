@@ -19,6 +19,7 @@ html, body {
 <script src="view.js"></script>
 <script src="controller.js"></script>
 <script src="bodies.js"></script>
+<script src="easing.js"></script>
 
 <script>
 
@@ -43,13 +44,13 @@ function main() {
 	new_time = new Date();
     frame_time = (new_time - current_time) / 1000;
 	
-    if ( frame_time > 0.1 )
+    if ( frame_time > 0.1 ) {
         frame_time = 0.1;
+	}
     current_time = new_time;
 
     accumulator += frame_time;
-    while ( accumulator >= TIME_STEP )
-    {
+    while ( accumulator >= TIME_STEP ) {
         my_model.update(TIME_STEP);
         total_elapsed_time += TIME_STEP;
         accumulator -= TIME_STEP;

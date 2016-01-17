@@ -4,6 +4,7 @@ class View {
         this.name = "I am a view." // Placeholder name.
         this.center = { x : 0, y : 0 }
         this.scale = 1;
+        
         this.base_image = new Image();
         this.base_image.src = 'graphics/space_bg.jpg';
         
@@ -69,7 +70,7 @@ class View {
 			var t = new Date();
 			t -= my_controller.mousedown_time;
 			t /= 1000;
-			this.draw_from_time(t, x, y); 
+			this.draw_from_time(t, x, y);
 		}
     }
     
@@ -81,7 +82,7 @@ class View {
 			}
 		}
 	}
-	
+    
 	/**
 	 * The following function will draw a picture given center and radius.
 	 */
@@ -93,14 +94,15 @@ class View {
 	draw_from_time(t, x, y) {
 		var radius = AstroMath.time_to_radius(t);
 		radius /= this.scale;
+		console.log(radius);
 		
 		if (t < 1) {
 			this.draw_at(this.moon_images[0], x, y, radius);
-		} else if (t > 2) {
+		} else if (t < 2) {
+			this.draw_at(this.planet_images[0], x, y, radius);
+		} else {
 			this.draw_at(this.glow_images[0], x, y, radius * 8 / 5);
 			this.draw_at(this.sun_images[0], x, y, radius);
-		} else {
-			this.draw_at(this.planet_images[0], x, y, radius);
 		}
 	}
 }
@@ -131,11 +133,13 @@ class AstroMath {
 	static time_to_radius(t) {
 		if (t < 1) {
 			return 2 * t + 2;
-		} else if (t > 2) {
-			return 100 * t + 10;
+		} else if (t < 2) {
+			return 10 * t;
+		} else if (t < 2.5) {
+			var my_iteration = Math.round((t - 2) / (2.5 - 2) * 30);
+			return easeOutBack(my_iteration, 20, 105, 30);
 		} else {
-			return 10 * t + 2;
+			return 50 * t;
 		}
-	}			
-		
+	}
 }
