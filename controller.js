@@ -16,7 +16,7 @@ var Controller = function() {
 			my_view.scale /= 1.5;
 			console.log(my_view.scale);
 		} else if (key == "(") { // Down arrow
-			if (my_view.scale < 6) { 
+			if (my_view.scale < 3) { 
 				my_view.scale *= 1.5;
 			}
 			console.log(my_view.scale);

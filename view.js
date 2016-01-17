@@ -44,23 +44,19 @@ var View = function() {
 			var vector = AstroMath.coordinate_plane_to_screen(bodies[obj].get_vector());
 			var radius = bodies[obj].radius / this.scale;
 			if (Star.prototype.isPrototypeOf(bodies[obj])) {
+				sun_color = AstroMath.sun_color_from_radius(radius * this.scale);
 				radius *= this.sun_resize;
-				this.draw_at(this.glow_images[7], vector.x, vector.y, radius * 8 / 5);
-				this.draw_at(this.sun_images[7], vector.x, vector.y, radius);
+				radius = Math.max(radius, 10)
+				this.draw_at(this.glow_images[sun_color], vector.x, vector.y, radius * 8 / 5);
+				this.draw_at(this.sun_images[sun_color], vector.x, vector.y, radius);
 			} else if (Planet.prototype.isPrototypeOf(bodies[obj])) {
 				radius *= this.planet_resize;
-				ctx.drawImage(
-					this.planet_images[bodies[obj].img],
-					vector.x - radius,
-					vector.y - radius,
-					2 * radius, 2 * radius);
+				radius = Math.max(radius, 10)
+				this.draw_at(this.planet_images[bodies[obj].img], vector.x, vector.y, radius, radius);
 			} else {
 				radius *= this.moon_resize;
-				ctx.drawImage(
-					this.moon_images[bodies[obj].img],
-					vector.x - radius,
-					vector.y - radius,
-					2 * radius, 2 * radius);
+				radius = Math.max(radius, 2)
+				this.draw_at(this.moon_images[bodies[obj].img], vector.x, vector.y, radius, radius);
 			}
 		}
 		
@@ -90,7 +86,10 @@ var View = function() {
 		var picture_size = 2000 / this.scale;
 		for (var i = -10; i < 10; i++) {
 			for (var j = -10; j < 10; j++) {
-				ctx.drawImage(this.base_image, i * picture_size + this.center.x, j * picture_size + this.center.y, picture_size, picture_size);
+				var top_left_x = i * picture_size + my_view.center.x / 10;
+				var top_left_y = j * picture_size + my_view.center.y / 10;
+				
+				ctx.drawImage(this.base_image, top_left_x, top_left_y, picture_size, picture_size);
 			}
 		}
 	}
@@ -109,13 +108,16 @@ var View = function() {
 		
 		if (t < 1) {
 			var rdm = Math.floor(r * 2);
+			radius *= this.moon_resize;
 			this.draw_at(this.moon_images[rdm], x, y, radius);
 		} else if (t > 2) {
+			sun_color = AstroMath.sun_color_from_radius(radius * my_view.scale);
 			radius *= this.sun_resize;
-			this.draw_at(this.glow_images[7], x, y, radius * 8 / 5);
-			this.draw_at(this.sun_images[7], x, y, radius);
+			this.draw_at(this.glow_images[sun_color], x, y, radius * 8 / 5);
+			this.draw_at(this.sun_images[sun_color], x, y, radius);
 		} else {
 			var rdm = Math.floor(r * 5);
+			radius *= this.planet_resize;
 			this.draw_at(this.planet_images[rdm], x, y, radius);
 		}
 	}
@@ -155,4 +157,18 @@ AstroMath.time_to_radius = function(t) {
 	} else {
 		return 50 * t;
 	}
-}		
+}
+
+AstroMath.sun_color_from_radius = function(radius) {
+	if (radius < AstroMath.time_to_radius(3.0)) {
+		return 7;
+	} else if (radius < AstroMath.time_to_radius(7)) {
+		var big_radius = AstroMath.time_to_radius(7);
+		var small_radius = AstroMath.time_to_radius(3);
+		var color = Math.floor((big_radius - radius) / (big_radius - small_radius) * 7);
+		console.log(color);
+		return color;
+	} else {
+		return 0;
+	}
+}
