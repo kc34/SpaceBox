@@ -39,7 +39,6 @@ class View {
 		var bodies = my_model.get_bodies();
 		for (var obj in bodies) {
 			var vector = AstroMath.coordinate_plane_to_screen(bodies[obj].get_vector());
-			ctx.fillStyle = bodies[obj].color;
 			var radius = bodies[obj].radius / this.scale;
 			var startAngle = 0;
 			var endAngle = 2 * Math.PI;
@@ -63,17 +62,24 @@ class View {
 		}
 		
 		// Time to draw a tentative star.
-		if (my_controller.mousedown == true) {
-			var x = my_controller.last_mouse_location.x;
-			var y = my_controller.last_mouse_location.y;
-			if (my_controller.fixed_t == -1) {
-				var t = new Date();
-				t -= my_controller.mousedown_time;
-				t /= 1000;
-				this.draw_from_time(t, x, y);
-			} else {
-				this.draw_from_time(my_controller.fixed_t, x, y);
-			} 
+		if (my_controller.mouse_state == "DOWN") {
+			var x = my_controller.mouse_location.x;
+			var y = my_controller.mouse_location.y;
+			var t = new Date();
+			t -= my_controller.mousedown_time;
+			t /= 1000;
+			this.draw_from_time(t, x, y);
+		} else if (my_controller.mouse_state == "MOVE") {
+			var x = my_controller.mousedown_location.x;
+			var y = my_controller.mousedown_location.y;
+			var new_x = my_controller.mouse_location.x;
+			var new_y = my_controller.mouse_location.y;
+			ctx.strokeStyle = "#FFFFFF";
+			ctx.beginPath();
+			ctx.moveTo(x, y);
+			ctx.lineTo(new_x, new_y);
+			ctx.stroke();
+			this.draw_from_time(my_controller.new_body_time, x, y);
 		}
     }
     
