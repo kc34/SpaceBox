@@ -151,9 +151,7 @@ function easeInOutCirc(currentIteration, startValue, changeInValue, totalIterati
 
 // Custom eases
 
-function easeInOutQuad1(currentIteration, startValue, changeInValue, totalIterations) {
-	if ((currentIteration /= totalIterations / 2) < 1) {
-		return changeInValue / 2 * Math.pow(currentIteration, 2) + startValue;
-	}
-	return -changeInValue / 2 * ((--currentIteration) * (currentIteration - 2) - 1) + startValue;
+function easeOutBack(t, b, c, d, s) {
+	if (s == undefined) s = 1.5;
+	return c*((t=t/d-1)*t*((s+1)*t + s) + 1) + b;
 }
