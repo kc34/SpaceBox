@@ -8,6 +8,7 @@ class Controller {
         this.mouse_location = null;
         this.GROW_MOVE_STOP_DIST = 2;
         this.new_body_time = null;
+        this.rand = null;
     }
 
     keydown_handler(key_event) {
@@ -19,6 +20,17 @@ class Controller {
 		} else if (key == "(") { // Down arrow
 			my_view.scale *= 1.5;
 			console.log(my_view.scale);
+		} else if (key == " ") {
+			my_model.running = !(my_model.running);
+			console.log("Banana phone!");
+		} else if (key == "W") {
+			my_view.center.y += my_view.scale * 100;
+		} else if (key == "S") {
+			my_view.center.y -= my_view.scale * 100;
+		} else if (key == "A") {
+			my_view.center.x += my_view.scale * 100;
+		} else if (key == "D") {
+			my_view.center.x -= my_view.scale * 100;
 		}
 		console.log(key);
     }
@@ -30,25 +42,18 @@ class Controller {
 	mousedown_handler(event) {
 		this.mouse_state = "DOWN";
 		this.mousedown_time = new Date();
-<<<<<<< HEAD
-		this.rand = Math.random();
-=======
+		
 		this.mousedown_location = { x: event.x, y : event.y };
 		this.mouse_location = { x: event.x, y : event.y };
->>>>>>> FETCH_HEAD
+		
+		this.rand = Math.random();
 	}
 	
 	mouseup_handler(event) {
 		if (this.mouse_state == "DOWN") {
 			this.new_body_time = (new Date() - this.mousedown_time) / 1000;
 			var vector = AstroMath.screen_to_coordinate_plane(event);
-<<<<<<< HEAD
-			console.log("Star adding", vector.x, vector.y);
-
-			my_model.addBody(vector.x, vector.y, t, 0, 0, this.rand);
-		
-=======
-			my_model.addBody(vector.x, vector.y, this.new_body_time, 0, 0);
+			my_model.addBody(vector.x, vector.y, this.new_body_time, 0, 0, this.rand);
 		} else if (this.mouse_state == "MOVE") {
 			var pos_vector_1 = AstroMath.screen_to_coordinate_plane(this.mousedown_location);
 			var pos_vector_2 = AstroMath.screen_to_coordinate_plane(event);
@@ -56,9 +61,8 @@ class Controller {
 				x : pos_vector_2.x - pos_vector_1.x,
 				y : pos_vector_2.y - pos_vector_1.y
 			}
-			my_model.addBody(pos_vector_1.x, pos_vector_1.y, this.new_body_time, delta_vector.x, delta_vector.y);
+			my_model.addBody(pos_vector_1.x, pos_vector_1.y, this.new_body_time, delta_vector.x, delta_vector.y, this.rand);
 			
->>>>>>> FETCH_HEAD
 		}
 		
 		this.mouse_state = "UP";

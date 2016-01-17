@@ -15,6 +15,7 @@ var Sector = function(){
 	this.bodies = [];
 	// this.planets = [];
 	// this.stars = [] 
+	this.running = true;
 }
 
 Sector.prototype.addBody = function(x, y, t, vx, vy, r) { // Remind Kevin to edit values
@@ -37,18 +38,20 @@ Sector.prototype.addBody = function(x, y, t, vx, vy, r) { // Remind Kevin to edi
 	}
 }
 Sector.prototype.update = function(dt) {
-	for (var idx in this.bodies) {
-		this.bodies[idx].move(dt);
-		
-		if (this.bodies.length > 1) {
+	if (this.running) {
+		for (var idx in this.bodies) {
+			this.bodies[idx].move(dt);
 			
-			var accel_vector = this.neighbor(this.bodies[idx]);
-			var x_accel = accel_vector[0];
-			var y_accel = accel_vector[1];
-			
-			this.bodies[idx].accelerate(x_accel, y_accel, dt);
+			if (this.bodies.length > 1) {
+				
+				var accel_vector = this.neighbor(this.bodies[idx]);
+				var x_accel = accel_vector[0];
+				var y_accel = accel_vector[1];
+				
+				this.bodies[idx].accelerate(x_accel, y_accel, dt);
+			}
+			this.collision_update();
 		}
-		this.collision_update();
 	}
 }
 Sector.prototype.get_bodies = function() {
@@ -108,7 +111,7 @@ Sector.prototype.neighbor = function(body) {
 	
 	if (Moon.prototype.isPrototypeOf(body)) {
 		for (var idx in this.bodies) {
-			if (Star.prototype.isPrototypeOf(this.bodies[idx]) || Planet.prototype.isPrototypeOf(this.bodies[idx])) {
+			if (Planet.prototype.isPrototypeOf(this.bodies[idx])) {
 				orbitables.push(this.bodies[idx]);
 			}
 		}

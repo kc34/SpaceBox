@@ -35,7 +35,7 @@ var Star = function(x, y, t, vx, vy) {
 var Planet = function(x, y, t, vx, vy, r) {
 	Body.call(this, x, y, t, vx, vy);
 	this.type = 'Planet';
-	this.mass = 5 * Math.pow(this.radius,3);
+	this.mass = 5 * Math.pow(this.radius, 3);
 	this.img = Math.floor(r * 5);
 }
 

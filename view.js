@@ -31,11 +31,6 @@ class View {
 			this.moon_images[i].src = 'graphics/moon_' + (i + 1).toString() + '.png';
 		}
 		
-		this.explosion_sprites = new Array(16);
-		for (var i = 0; i < 16; i++) {
-			this.moon_images[i] = new Image();
-			this.moon_images[i].src = 'graphics/explosion/' + i.toString() + '.png';
-		}
     }
 
     draw() {
@@ -46,10 +41,9 @@ class View {
 			var vector = AstroMath.coordinate_plane_to_screen(bodies[obj].get_vector());
 			var radius = bodies[obj].radius / this.scale;
 			if (Star.prototype.isPrototypeOf(bodies[obj])) {
-				this.draw_at(this.glow_images[0], vector.x, vector.y, radius * 8 / 5);
-				this.draw_at(this.sun_images[0], vector.x, vector.y, radius);
+				this.draw_at(this.glow_images[7], vector.x, vector.y, radius * 8 / 5);
+				this.draw_at(this.sun_images[7], vector.x, vector.y, radius);
 			} else if (Planet.prototype.isPrototypeOf(bodies[obj])) {
-				console.log(bodies[obj].img);
 				ctx.drawImage(
 					this.planet_images[bodies[obj].img],
 					vector.x - radius,
@@ -65,23 +59,13 @@ class View {
 		}
 		
 		// Time to draw a tentative star.
-<<<<<<< HEAD
-		if (my_controller.mousedown == true) {
-			var x = my_controller.last_mouse_location.x;
-			var y = my_controller.last_mouse_location.y;
-			var r = my_controller.rand;
-			var t = new Date();
-			t -= my_controller.mousedown_time;
-			t /= 1000;
-			this.draw_from_time(t, x, y, r);
-=======
 		if (my_controller.mouse_state == "DOWN") {
 			var x = my_controller.mouse_location.x;
 			var y = my_controller.mouse_location.y;
 			var t = new Date();
 			t -= my_controller.mousedown_time;
 			t /= 1000;
-			this.draw_from_time(t, x, y);
+			this.draw_from_time(t, x, y, my_controller.rand);
 		} else if (my_controller.mouse_state == "MOVE") {
 			var x = my_controller.mousedown_location.x;
 			var y = my_controller.mousedown_location.y;
@@ -92,8 +76,7 @@ class View {
 			ctx.moveTo(x, y);
 			ctx.lineTo(new_x, new_y);
 			ctx.stroke();
-			this.draw_from_time(my_controller.new_body_time, x, y);
->>>>>>> FETCH_HEAD
+			this.draw_from_time(my_controller.new_body_time, x, y, my_controller.rand);
 		}
     }
     
@@ -119,21 +102,14 @@ class View {
 		radius /= this.scale;
 		
 		if (t < 1) {
-<<<<<<< HEAD
 			var rdm = Math.floor(r * 2);
 			this.draw_at(this.moon_images[rdm], x, y, radius);
-		} else if (t < 2) {
+		} else if (t > 2) {
+			this.draw_at(this.glow_images[7], x, y, radius * 8 / 5);
+			this.draw_at(this.sun_images[7], x, y, radius);
+		} else {
 			var rdm = Math.floor(r * 5);
 			this.draw_at(this.planet_images[rdm], x, y, radius);
-		} else {
-=======
-			this.draw_at(this.moon_images[0], x, y, radius);
-		} else if (t > 2) {
->>>>>>> FETCH_HEAD
-			this.draw_at(this.glow_images[0], x, y, radius * 8 / 5);
-			this.draw_at(this.sun_images[0], x, y, radius);
-		} else {
-			this.draw_at(this.planet_images[0], x, y, radius);
 		}
 	}
 }
