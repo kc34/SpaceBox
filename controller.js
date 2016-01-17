@@ -5,6 +5,7 @@ var Controller = function() {
 	this.mousedown_time = null;
 	this.mousedown_location = null;
 	this.mouse_location = null;
+	this.last_mouse_location = null;
 	this.GROW_MOVE_STOP_DIST = 2;
 	this.new_body_time = null;
 	this.rand = null;
@@ -70,15 +71,23 @@ var Controller = function() {
 	}
 	
 	this.mousemove_handler = function(event) {
-		if (this.mouse_state == "DOWN") {
+		var time_since_mouse_down = (new Date() - this.mousedown_time) / 1000;
+		
+		if (this.mouse_state == "DOWN" || this.mouse_state == "PAN") {
 			var mouse_delta = {
 				x : event.x - this.mousedown_location.x,
 				y : event.y - this.mousedown_location.y
 			}
-			var dist = AstroMath.distance(0, 0, mouse_delta.x, mouse_delta.y);
-			if (dist > this.GROW_MOVE_STOP_DIST) {
-				this.mouse_state = "MOVE";
-				this.new_body_time = (new Date() - this.mousedown_time) / 1000;
+			if (time_since_mouse_down > 0.25 && this.mouse_state != "PAN") {
+				var dist = AstroMath.distance(0, 0, mouse_delta.x, mouse_delta.y);
+				if (dist > this.GROW_MOVE_STOP_DIST) {
+					this.mouse_state = "MOVE";
+					this.new_body_time = (new Date() - this.mousedown_time) / 1000;
+				}
+			} else if (this.mouse_state == "PAN" || time_since_mouse_down <= 0.25) {
+				my_view.center.x += (event.x - this.mouse_location.x) * my_view.scale;
+				my_view.center.y += (event.y - this.mouse_location.y) * my_view.scale;
+				this.mouse_state = "PAN";
 			}
 		}
 		this.mouse_location = { x: event.x , y : event.y }

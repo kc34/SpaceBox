@@ -46,12 +46,11 @@ var View = function() {
 			if (Star.prototype.isPrototypeOf(bodies[obj])) {
 				sun_color = AstroMath.sun_color_from_radius(radius * this.scale);
 				radius *= this.sun_resize;
-				radius = Math.max(radius, 10)
 				this.draw_at(this.glow_images[sun_color], vector.x, vector.y, radius * 8 / 5);
 				this.draw_at(this.sun_images[sun_color], vector.x, vector.y, radius);
 			} else if (Planet.prototype.isPrototypeOf(bodies[obj])) {
 				radius *= this.planet_resize;
-				radius = Math.max(radius, 10)
+				radius = Math.max(radius, 5)
 				this.draw_at(this.planet_images[bodies[obj].img], vector.x, vector.y, radius, radius);
 			} else {
 				radius *= this.moon_resize;
@@ -62,12 +61,15 @@ var View = function() {
 		
 		// Time to draw a tentative star.
 		if (my_controller.mouse_state == "DOWN") {
+			// wait for time to be bigger than 0.25 seconds
 			var x = my_controller.mouse_location.x;
 			var y = my_controller.mouse_location.y;
 			var t = new Date();
 			t -= my_controller.mousedown_time;
 			t /= 1000;
-			this.draw_from_time(t, x, y, my_controller.rand);
+			if (t > 0.25) {
+				this.draw_from_time(t, x, y, my_controller.rand);
+			}
 		} else if (my_controller.mouse_state == "MOVE") {
 			var x = my_controller.mousedown_location.x;
 			var y = my_controller.mousedown_location.y;
