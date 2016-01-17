@@ -77,12 +77,12 @@ Sector.prototype.collision_update = function(){
 					console.log("COLLISION DETECTED", required_space, t_dist)
 					if (Star.prototype.isPrototypeOf(this.bodies[idx])) {
 						this.bodies.splice(idx2, 1);
-						var coor = (x2,y2);
+						var coor = [x2,y2];
 						col_array.push(coor);
 					} 
 					else if (Star.prototype.isPrototypeOf(this.bodies[idx2])){
 						this.bodies.splice(idx, 1);
-						var coor = (x1,y1);
+						var coor = [x1,y1];
 						col_array.push(coor);
 					}
 					else {
@@ -92,7 +92,7 @@ Sector.prototype.collision_update = function(){
 						this.bodies.splice(idx2 - 1, 1);
 						var x_coor = (x1+x2)/2;
 						var y_coor = (y1+y2)/2;
-						var coor = (x_coor,y_coor);
+						var coor = [x_coor,y_coor];
 						col_array.push(coor);
 					}
 				}
