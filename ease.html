@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+  
+<head>
+<title>Simple Canvas Example</title>
+<style>
+canvas {
+    border: 3px #CCC solid;
+}
+</style>
+</head>
+ 
+<body>
+<div id="container">
+    <canvas id="myCanvas" height="450" width="450"></canvas>
+</div>
+<script src="easing.js"></script>
+    <script>
+        var mainCanvas = document.getElementById("myCanvas");
+        var mainContext = mainCanvas.getContext('2d');
+         
+        var canvasWidth = mainCanvas.width;
+        var canvasHeight = mainCanvas.height;
+                         
+        var requestAnimationFrame = window.requestAnimationFrame || 
+                                    window.mozRequestAnimationFrame || 
+                                    window.webkitRequestAnimationFrame || 
+                                    window.msRequestAnimationFrame;
+                                             
+        var iteration = 0;
+        var totalIterations = 50;
+        var easingValue;
+        
+        var grow = true;
+        
+        function drawCircle() {         
+            mainContext.clearRect(0, 0, canvasWidth, canvasHeight);
+             
+            // color in the background
+            mainContext.fillStyle = "#000000";
+            mainContext.fillRect(0, 0, canvasWidth, canvasHeight);
+             
+            // draw the image
+            mainContext.glow_image = new Image();
+        	mainContext.glow_image.src = 'graphics/glow_1.png';
+            mainContext.sun_image = new Image();
+        	mainContext.sun_image.src = 'graphics/star_1.png';
+        	
+            // var radius = 100;
+            
+			if (grow) {
+				easingValue = easeInQuad(iteration, 400, 15, totalIterations);
+			} else {
+				easingValue = easeOutQuad(iteration, 415, -15, totalIterations);
+			}            
+			
+            mainContext.drawImage(mainContext.glow_image,
+				225 - easingValue/2, 225 - easingValue/2,
+				easingValue, easingValue)
+			mainContext.drawImage(mainContext.sun_image,
+				225 - 125, 225 - 125,
+				250, 250)
+             
+            // color in the circle
+            mainContext.fillStyle = "#006699";
+            mainContext.fill();
+            
+            if (iteration < totalIterations) {
+    			iteration++;
+			} else {
+				iteration = 0;
+				grow = !grow
+			}
+            
+            requestAnimationFrame(drawCircle);
+        }
+        drawCircle();
+    </script>
+ 
+</body>
+</html>
