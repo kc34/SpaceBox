@@ -86,13 +86,13 @@ class View {
 	 * The following function will draw a picture given center and radius.
 	 */
 	draw_at(image, x, y, radius) {
-		radius /= my_view.scale;
 		ctx.drawImage(
 			image, x - radius, y - radius, 2 * radius, 2 * radius);
 	}
 	
 	draw_from_time(t, x, y) {
 		var radius = AstroMath.time_to_radius(t);
+		radius /= this.scale;
 		
 		if (t < 1) {
 			this.draw_at(this.moon_images[0], x, y, radius);

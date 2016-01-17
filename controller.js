@@ -63,7 +63,7 @@ class Controller {
 				x : event.x - this.last_mouse_location.x,
 				y : event.y - this.last_mouse_location.y
 			}
-			this.mouse_travelled += Math.abs(mouse_delta.x) + Math.abs(mouse_delta.y);
+			this.mouse_travelled += Math.pow(Math.pow(mouse_delta.x, 2) + Math.pow(mouse_delta.y, 2), 0.5);
 			this.last_mouse_location.x = event.x;
 			this.last_mouse_location.y = event.y;
 			my_view.center.x += mouse_delta.x * my_view.scale;
