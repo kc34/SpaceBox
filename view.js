@@ -86,6 +86,7 @@ class View {
 	 * The following function will draw a picture given center and radius.
 	 */
 	draw_at(image, x, y, radius) {
+		radius /= my_view.scale;
 		ctx.drawImage(
 			image, x - radius, y - radius, 2 * radius, 2 * radius);
 	}
@@ -93,7 +94,6 @@ class View {
 	draw_from_time(t, x, y) {
 		var radius = AstroMath.time_to_radius(t);
 		
-		console.log("Drawing!", x, y, t);
 		if (t < 1) {
 			this.draw_at(this.moon_images[0], x, y, radius);
 		} else if (t > 2) {
@@ -108,7 +108,8 @@ class View {
 class AstroMath {
 	
 	static distance(x_1, y_1, x_2, y_2) {
-		return Math.pow(Math.pow(x_1 - x_2, 2) + Math.pow(x_1 - x_2, 2), 0.5);
+		var distance = Math.pow(Math.pow(x_1 - x_2, 2) + Math.pow(x_1 - x_2, 2), 0.5);
+		return distance;
 	}
 	
 	static coordinate_plane_to_screen(vector) {

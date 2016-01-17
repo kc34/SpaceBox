@@ -14,6 +14,7 @@ var Body = function(x, y, t, vx, vy) {
 		}
 	};
 	this.move = function(dt) {
+		
 		this.x_position += this.x_velocity * dt;
 		this.y_position += this.y_velocity * dt;
 	};

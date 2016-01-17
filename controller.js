@@ -48,7 +48,7 @@ class Controller {
 			console.log("Star adding");
 			var vector = AstroMath.screen_to_coordinate_plane(event);
 
-			my_model.addBody(vector.x, vector.y, t, 10, -10);
+			my_model.addBody(vector.x, vector.y, t, 0, 0);
 		
 		}
 		
