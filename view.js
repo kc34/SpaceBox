@@ -34,13 +34,14 @@ var View = function() {
 	}
 	
 	this.moon_resize = 3.0 / 2.0
-	
+	/*
 	this.collision_images = new Array(10)
 	for (var i = 0; i < 10; i++) {
 		this.collision_images[i] = new Image();
 		this.collision_images[i].src = 'graphics/explosion/' + (i + 1).toString() + '.png';
 	}
 	this.collisions = [];	
+	*/
 
     this.draw = function() {
 		this.draw_background();
@@ -64,7 +65,7 @@ var View = function() {
 				this.draw_at(this.moon_images[bodies[obj].img], vector.x, vector.y, radius, radius);
 			}
 		}
-		
+		/*
 		this.collisions.push([my_model.collision_update(),10]);
 		if (this.collisions.length != 0) {
 			for (var idx = 0; idx < this.collisions.length; idx ++) {
@@ -77,7 +78,7 @@ var View = function() {
 				this.collisions.splice(idx, 1);
 			}
 		}
-	
+		*/
 		
 		// Time to draw a tentative star.
 		if (my_controller.mouse_state == "DOWN") {
