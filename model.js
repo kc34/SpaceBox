@@ -28,35 +28,23 @@ Sector.prototype.addBody = function(x, y, t, vx, vy) { // Remind Kevin to edit v
 	{
 		var new_body = new Moon(x, y, t, vx, vy);
 		this.bodies.push(new_body);
-		this.planets.push(new_body);
 	}
 	else
 	{
 		var new_body = new Planet(x, y, t, vx, vy);
 		this.bodies.push(new_body);
+		this.planets.push(new_body);
 	}
 }
 Sector.prototype.update = function(dt) {
 	for (var idx in this.bodies) {
 		this.bodies[idx].move(dt);
-		var x_accel = 0;
-		var y_accel = 0
 		
 		if (this.bodies.length > 1) {
-		
-			
-			
-			/*
-			for (var idx2 in this.bodies) {
-				var accel_vector = this.acceleration(this.bodies[idx], this.bodies[idx2]);
-				x_accel += accel_vector[0];
-				y_accel += accel_vector[1];
-			}
-			*/
 			
 			var accel_vector = this.neighbor(this.bodies[idx]);
-			x_accel += accel_vector[0];
-			y_accel += accel_vector[1];
+			var x_accel = accel_vector[0];
+			var y_accel = accel_vector[1];
 			
 			this.bodies[idx].accelerate(x_accel, y_accel, dt);
 		}
@@ -78,9 +66,10 @@ Sector.prototype.collision_update = function(){
 				var y2 = this.bodies[idx2].y_position; // Remind Kevin to add index.
 				var x_dist = (x1-x2);
 				var y_dist = (y1-y2);
-				var t_dist = AstroMath.distance(x_dist, y_dist, 0, 0); // ** doesn't work i guess.
-				if ((this.bodies[idx].radius + this.bodies[idx2].radius) > t_dist){
-					console.log("COLLISION DETECTED", this.bodies[idx].radius + this.bodies[idx2].radius, t_dist)
+				var t_dist = AstroMath.distance(x_dist, y_dist, 0, 0);
+				var required_space = this.bodies[idx].radius + this.bodies[idx2].radius;
+				if (required_space > t_dist){
+					console.log("COLLISION DETECTED", required_space, t_dist)
 					if (Star.prototype.isPrototypeOf(this.bodies[idx])) {
 						this.bodies.splice(idx2, 1);
 						var coor = (x2,y2);
@@ -118,10 +107,10 @@ Sector.prototype.neighbor = function(body) {
 	var orbitables = [];
 	
 	if (Moon.prototype.isPrototypeOf(body)) {
-		var orbitables = this.stars.concat(this.planets);
+		orbitables = this.stars.concat(this.planets);
 	}
 	else if (Planet.prototype.isPrototypeOf(body)) {
-		var orbitables = this.stars;
+		orbitables = this.stars;
 	} 
 	
 	if (orbitables.length != 0) {
@@ -129,7 +118,7 @@ Sector.prototype.neighbor = function(body) {
 			var dist = AstroMath.distance(body.x_position, orbitables[idx].x_position, body.y_position, orbitables[idx].y_position);
 			if (dist != 0){
 				dist_array.push(dist);
-				neighbor_array.push(this.bodies[idx]);
+				neighbor_array.push(orbitables[idx]);
 			}
 		}
 		
@@ -141,6 +130,7 @@ Sector.prototype.neighbor = function(body) {
 		}
 		var n_idx = dist_array.indexOf(min_dist);
 		var best_neighbor = neighbor_array[n_idx];
+		console.log(body, best_neighbor, neighbor_array, n_idx);
 		return this.acceleration(body, best_neighbor);
 	} else {
 		return [0, 0];

@@ -45,8 +45,8 @@ class Controller {
 		console.log(this.MOUSE_TRAVEL_THRESHOLD);
 		
 		if (this.mouse_travelled < this.MOUSE_TRAVEL_THRESHOLD) {
-			console.log("Star adding");
 			var vector = AstroMath.screen_to_coordinate_plane(event);
+			console.log("Star adding", vector.x, vector.y);
 
 			my_model.addBody(vector.x, vector.y, t, 0, 0);
 		

@@ -108,7 +108,7 @@ class View {
 class AstroMath {
 	
 	static distance(x_1, y_1, x_2, y_2) {
-		var distance = Math.pow(Math.pow(x_1 - x_2, 2) + Math.pow(x_1 - x_2, 2), 0.5);
+		var distance = Math.pow(Math.pow(x_1 - x_2, 2) + Math.pow(y_1 - y_2, 2), 0.5);
 		return distance;
 	}
 	
