@@ -11,8 +11,6 @@ class View {
 			this.sun_images[i] = new Image();
 			this.sun_images[i].src = 'graphics/star_' + (i + 1).toString() + '.png';
 		}
-        //this.sun_image = new Image();
-        //this.sun_image.src = 'graphics/star_1.png'
         
         this.glow_images = new Array(8);
         for (var i = 0; i < 8; i++) {
@@ -26,22 +24,13 @@ class View {
 		
 		var bodies = my_model.get_bodies();
 		for (var obj in bodies) {
-			var vector = AstroMath.coordinate_plane_to_screen(bodies[obj]);
+			var vector = AstroMath.coordinate_plane_to_screen(bodies[obj].get_vector());
 			ctx.fillStyle = bodies[obj].color;
 			var radius = bodies[obj].radius / this.scale;
 			var startAngle = 0;
 			var endAngle = 2 * Math.PI;
 			var anticlockwise = false;
 			if (Star.prototype.isPrototypeOf(bodies[obj])) {
-				/*
-				ctx.drawImage(
-					this.sun_image,
-					vector.x - this.sun_image.width / 2,
-					vector.y - this.sun_image.height / 2) // * 8 / 5
-				ctx.drawImage(this.glow_image,
-					vector.x - this.glow_image.width / 2,
-					vector.y - this.glow_image.height / 2)
-				*/
 				ctx.drawImage(
 					this.glow_images[0],
 					vector.x - radius * 8 / 5,
@@ -53,6 +42,7 @@ class View {
 					vector.y - radius,
 					2 * radius, 2 * radius);
 			} else {
+				ctx.fillStyle ="#FF0000";
 				ctx.beginPath();
 				ctx.arc(vector.x, vector.y, radius, startAngle, endAngle, anticlockwise);
 				ctx.fill();

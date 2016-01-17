@@ -37,7 +37,7 @@ Sector.prototype.addBody = function(x,y,t,v) { // Remind Kevin to edit values
 	}
 }
 Sector.prototype.update = function(dt) {
-	for (idx in Sector.bodies)
+	//for (idx in Sector.bodies)
 }
 Sector.prototype.get_bodies = function() {
 	return this.bodies;
@@ -89,7 +89,7 @@ Sector.prototype.neighbor = function(body) {
 	if (typeof body == 'Moon') {
 		orbitables = this.stars.concat(this.planets);
 	}
-	elseif (typeof body == 'Planet') {
+	else if (typeof body == 'Planet') {
 		orbitables = this.stars;
 	}
 	for (idx in orbitables) {
@@ -113,7 +113,7 @@ Sector.prototype.acceleration = function(body1, body2, dist, x1, y1) {
 	var sin = -y1/dist;
 	return [magnitude*cos, magnitude*sin]
 }
-
+/*
 var Body = function(x, y, t, v) {
 	this.x = x;
 	this.y = y;
@@ -135,4 +135,4 @@ var Moon = function(x, y, t, v) {
 	Body.call(this, x, y, t, v);
 	this.color = "#888888";
 	this.radius = 5;
-}
+}*/
