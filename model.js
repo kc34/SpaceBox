@@ -15,6 +15,8 @@ var Sector = function(){
 	// this.planets = [];
 	// this.stars = [] 
 	this.running = true;
+	this.high_score = 0;
+	this.score = 0;
 	this.k = 5;
 }
 
@@ -55,13 +57,26 @@ Sector.prototype.update = function(dt) {
 			this.collision_update();
 		}
 	}
+	var score = 0;
+	for (var idx in this.bodies) {
+		if (Planet.prototype.isPrototypeOf(this.bodies[idx])) {
+			var velocity = AstroMath.distance(0, 0, this.bodies[idx].x_velocity, this.bodies[idx].y_velocity);
+			if (velocity > 100) {
+				score += 10000 / Math.max(velocity, 1);
+			}
+		}
+	}
+	this.score = Math.floor(score);
+	if (this.score > this.high_score) {
+		this.high_score = this.score;
+	}
 }
 Sector.prototype.get_bodies = function() {
 	return this.bodies;
 }
 
 Sector.prototype.collision_update = function(){
-	var col_array = []; // collision
+	var col_array = [[],[]]; // collision
 	for (var idx = 0; idx < this.bodies.length - 1; idx++) {
 		for (var idx2 = idx + 1; idx2 < this.bodies.length; idx2++) {
 			if (idx != idx2) {
@@ -77,13 +92,13 @@ Sector.prototype.collision_update = function(){
 					console.log("COLLISION DETECTED", required_space, t_dist)
 					if (Star.prototype.isPrototypeOf(this.bodies[idx])) {
 						this.bodies.splice(idx2, 1);
-						var coor = [x2,y2];
-						col_array.push(coor);
+						var coor = (x2,y2);
+						col_array[0].push(coor);
 					} 
 					else if (Star.prototype.isPrototypeOf(this.bodies[idx2])){
 						this.bodies.splice(idx, 1);
-						var coor = [x1,y1];
-						col_array.push(coor);
+						var coor = (x1,y1);
+						col_array[0].push(coor);
 					}
 					else {
 						console.log(this.bodies, idx);
@@ -92,8 +107,8 @@ Sector.prototype.collision_update = function(){
 						this.bodies.splice(idx2 - 1, 1);
 						var x_coor = (x1+x2)/2;
 						var y_coor = (y1+y2)/2;
-						var coor = [x_coor,y_coor];
-						col_array.push(coor);
+						var coor = (x_coor,y_coor);
+						col_array[1].push(coor);
 					}
 				}
 			}
@@ -102,8 +117,6 @@ Sector.prototype.collision_update = function(){
 	return col_array;
 }
 
-
-	
 Sector.prototype.neighbor = function(body) {
 	
 	var dist_array = [];

@@ -6,7 +6,7 @@ var Controller = function() {
 	this.mousedown_location = null;
 	this.mouse_location = null;
 	this.last_mouse_location = null;
-	this.GROW_MOVE_STOP_DIST = 2;
+	this.GROW_MOVE_STOP_DIST = 10;
 	this.new_body_time = null;
 	this.rand = null;
 
@@ -43,32 +43,18 @@ var Controller = function() {
 	this.mousedown_handler = function(event) {
 		this.mouse_state = "DOWN";
 		this.mousedown_time = new Date();
-<<<<<<< Updated upstream
 		
 		this.mousedown_location = { x: event.x, y : event.y };
 		this.mouse_location = { x: event.x, y : event.y };
 		
 		this.rand = Math.random();
-=======
-		this.rand = Math.random();
-		this.mousedown_location = { x: event.x, y : event.y };
-		this.mouse_location = { x: event.x, y : event.y };
->>>>>>> Stashed changes
 	}
 	
 	this.mouseup_handler = function(event) {
 		if (this.mouse_state == "DOWN") {
 			this.new_body_time = (new Date() - this.mousedown_time) / 1000;
 			var vector = AstroMath.screen_to_coordinate_plane(event);
-<<<<<<< Updated upstream
 			my_model.addBody(vector.x, vector.y, this.new_body_time, 0, 0, this.rand);
-=======
-			console.log("Star adding", vector.x, vector.y);
-
-			my_model.addBody(vector.x, vector.y, t, 0, 0, this.rand);
-		
-			my_model.addBody(vector.x, vector.y, this.new_body_time, 0, 0);
->>>>>>> Stashed changes
 		} else if (this.mouse_state == "MOVE") {
 			var pos_vector_1 = AstroMath.screen_to_coordinate_plane(this.mousedown_location);
 			var pos_vector_2 = AstroMath.screen_to_coordinate_plane(event);
@@ -92,13 +78,13 @@ var Controller = function() {
 				x : event.x - this.mousedown_location.x,
 				y : event.y - this.mousedown_location.y
 			}
+			var dist = AstroMath.distance(0, 0, mouse_delta.x, mouse_delta.y);
 			if (time_since_mouse_down > 0.25 && this.mouse_state != "PAN") {
-				var dist = AstroMath.distance(0, 0, mouse_delta.x, mouse_delta.y);
 				if (dist > this.GROW_MOVE_STOP_DIST) {
 					this.mouse_state = "MOVE";
 					this.new_body_time = (new Date() - this.mousedown_time) / 1000;
 				}
-			} else if (this.mouse_state == "PAN" || time_since_mouse_down <= 0.25) {
+			} else if (this.mouse_state == "PAN" || (time_since_mouse_down <= 0.25 && dist > this.GROW_MOVE_STOP_DIST)) {
 				my_view.center.x += (event.x - this.mouse_location.x) * my_view.scale;
 				my_view.center.y += (event.y - this.mouse_location.y) * my_view.scale;
 				this.mouse_state = "PAN";
