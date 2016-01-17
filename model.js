@@ -13,8 +13,8 @@
  
 var Sector = function(){
 	this.bodies = [];
-	this.planets = [];
-	this.stars = [] 
+	// this.planets = [];
+	// this.stars = [] 
 }
 
 Sector.prototype.addBody = function(x, y, t, vx, vy) { // Remind Kevin to edit values
@@ -22,7 +22,7 @@ Sector.prototype.addBody = function(x, y, t, vx, vy) { // Remind Kevin to edit v
 	{
 		var new_body = new Star(x, y, t, vx, vy); // Remind Kevin to put stars.
 		this.bodies.push(new_body);
-		this.stars.push(new_body)
+		//this.stars.push(new_body)
 	}
 	else if (t < 1)
 	{
@@ -33,7 +33,7 @@ Sector.prototype.addBody = function(x, y, t, vx, vy) { // Remind Kevin to edit v
 	{
 		var new_body = new Planet(x, y, t, vx, vy);
 		this.bodies.push(new_body);
-		this.planets.push(new_body);
+		//this.planets.push(new_body);
 	}
 }
 Sector.prototype.update = function(dt) {
@@ -107,10 +107,18 @@ Sector.prototype.neighbor = function(body) {
 	var orbitables = [];
 	
 	if (Moon.prototype.isPrototypeOf(body)) {
-		orbitables = this.stars.concat(this.planets);
+		for (var idx in this.bodies) {
+			if (Star.prototype.isPrototypeOf(this.bodies[idx]) || Planet.prototype.isPrototypeOf(this.bodies[idx])) {
+				orbitables.push(this.bodies[idx]);
+			}
+		}
 	}
 	else if (Planet.prototype.isPrototypeOf(body)) {
-		orbitables = this.stars;
+		for (var idx in this.bodies) {
+			if (Star.prototype.isPrototypeOf(this.bodies[idx])) {
+				orbitables.push(this.bodies[idx]);
+			}
+		}
 	} 
 	
 	if (orbitables.length != 0) {
