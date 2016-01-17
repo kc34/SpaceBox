@@ -13,6 +13,8 @@
  
 var Sector = function(){
 	this.bodies = [];
+	this.planets = [];
+	this.stars = [] 
 }
 
 Sector.prototype.addBody = function(x,y,t,v) { // Remind Kevin to edit values
@@ -20,11 +22,13 @@ Sector.prototype.addBody = function(x,y,t,v) { // Remind Kevin to edit values
 	{
 		var new_body = new Star(x,y,t,v); // Remind Kevin to put stars.
 		this.bodies.push(new_body);
+		this.stars.push(new_body)
 	}
 	else if (t < 1)
 	{
 		var new_body = new Moon(x,y,t,v);
 		this.bodies.push(new_body);
+		this.planets.push(new_body);
 	}
 	else
 	{
@@ -52,12 +56,12 @@ Sector.prototype.collision_update = function(){
 				var y_dist = (y1-y2);
 				var t_dist = Math.pow(Math.pow(x_dist, 2) + Math.pow(y_dist, 2), 0.5); // ** doesn't work i guess.
 				if ((Sector.bodies[idx].radius + Sector.bodies[idx2].radius) > t_dist){
-					if (typeof(Sector.bodies[idx]) == Star) {
+					if (typeof Sector.bodies[idx] == 'Star') {
 						Sector.remove(Sector.bodies[idx2]);
 						var coor = (x2,y2);
 						col_array[0].push(coor);
 					} 
-					else if (typeof(Sector.bodies[idx2]) == Star){
+					else if (typeof Sector.bodies[idx2] == 'Star'){
 						Sector.remove(Sector.bodies[idx]);
 						var coor = (x1,y1);
 						col_array[0].push(coor);
@@ -77,30 +81,17 @@ Sector.prototype.collision_update = function(){
 	return col_array;
 }
 
-var createOrbitables = function(bodytype) {
-	orbitables = [];
-	if (bodytype == 'Planet') {
-		for (idx in Sector.bodies) {
-			if (typeof Sector.bodies[idx] == 'Star') {
-				orbitables.push(Sector.bodies[idx]);
-			}
-		}
-	}
-	elseif (bodytype == 'Moon') {
-		for (idx in Sector.bodies) {
-			if (typeof Sector.bodies[idx] == 'Star' || typeof Sector.bodies == 'Planet') {
-				orbitables.push(Sector.bodies[idx]);
-			}
-		}
-	}
-	return orbitables;
-}
-	
+
 	
 Sector.prototype.neighbor = function(body) {
 	var dist_array = [];
 	var neighbor_array = [];
-	orbitables = createOrbitables(typeof body)
+	if (typeof body == 'Moon') {
+		orbitables = this.stars.concat(this.planets);
+	}
+	elseif (typeof body == 'Planet') {
+		orbitables = this.stars;
+	}
 	for (idx in orbitables) {
 		var x1 = body.x_position - Sector.bodies[idx].x_position;
 		var y1 = body.y_position - Sector.bodies[idx].y_position;
