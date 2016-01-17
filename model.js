@@ -61,7 +61,7 @@ Sector.prototype.get_bodies = function() {
 }
 
 Sector.prototype.collision_update = function(){
-	var col_array = [[],[]]; // collision
+	var col_array = []; // collision
 	for (var idx = 0; idx < this.bodies.length - 1; idx++) {
 		for (var idx2 = idx + 1; idx2 < this.bodies.length; idx2++) {
 			if (idx != idx2) {
@@ -78,12 +78,12 @@ Sector.prototype.collision_update = function(){
 					if (Star.prototype.isPrototypeOf(this.bodies[idx])) {
 						this.bodies.splice(idx2, 1);
 						var coor = (x2,y2);
-						col_array[0].push(coor);
+						col_array.push(coor);
 					} 
 					else if (Star.prototype.isPrototypeOf(this.bodies[idx2])){
 						this.bodies.splice(idx, 1);
 						var coor = (x1,y1);
-						col_array[0].push(coor);
+						col_array.push(coor);
 					}
 					else {
 						console.log(this.bodies, idx);
@@ -93,7 +93,7 @@ Sector.prototype.collision_update = function(){
 						var x_coor = (x1+x2)/2;
 						var y_coor = (y1+y2)/2;
 						var coor = (x_coor,y_coor);
-						col_array[1].push(coor);
+						col_array.push(coor);
 					}
 				}
 			}
