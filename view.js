@@ -5,7 +5,20 @@ class View {
         this.center = { x : 0, y : 0 }
         this.scale = 1;
         this.base_image = new Image();
-        this.base_image.src = 'space_bg.jpg';
+        this.base_image.src = 'graphics/space_bg.jpg';
+        this.sun_images = new Array(8);
+        for (var i = 0; i < 8; i++) {
+			this.sun_images[i] = new Image();
+			this.sun_images[i].src = 'graphics/star_' + (i + 1).toString() + '.png';
+		}
+        //this.sun_image = new Image();
+        //this.sun_image.src = 'graphics/star_1.png'
+        
+        this.glow_images = new Array(8);
+        for (var i = 0; i < 8; i++) {
+			this.glow_images[i] = new Image();
+			this.glow_images[i].src = 'graphics/glow_' + (i + 1).toString() + '.png';
+		}
     }
 
     draw() {
@@ -19,17 +32,39 @@ class View {
 			var startAngle = 0;
 			var endAngle = 2 * Math.PI;
 			var anticlockwise = false;
-			ctx.beginPath();
-			ctx.arc(vector.x, vector.y, radius, startAngle, endAngle, anticlockwise);
-			ctx.fill();
+			if (Star.prototype.isPrototypeOf(bodies[obj])) {
+				/*
+				ctx.drawImage(
+					this.sun_image,
+					vector.x - this.sun_image.width / 2,
+					vector.y - this.sun_image.height / 2) // * 8 / 5
+				ctx.drawImage(this.glow_image,
+					vector.x - this.glow_image.width / 2,
+					vector.y - this.glow_image.height / 2)
+				*/
+				ctx.drawImage(
+					this.glow_images[0],
+					vector.x - radius * 8 / 5,
+					vector.y - radius * 8 / 5,
+					2 * radius * 8 / 5, 2 * radius * 8 / 5)
+				ctx.drawImage(
+					this.sun_images[0],
+					vector.x - radius,
+					vector.y - radius,
+					2 * radius, 2 * radius);
+			} else {
+				ctx.beginPath();
+				ctx.arc(vector.x, vector.y, radius, startAngle, endAngle, anticlockwise);
+				ctx.fill();
+			}
 		}
     }
     
     draw_background() {
 		var picture_size = 2000 / this.scale;
-		for (var i = 0; i < window.innerWidth / picture_size; i++) {
-			for (var j = 0; j < window.innerHeight / picture_size; j++) {
-				ctx.drawImage(this.base_image, i * picture_size, j * picture_size, picture_size, picture_size);
+		for (var i = -1; i < window.innerWidth / picture_size; i++) {
+			for (var j = -1; j < window.innerHeight / picture_size; j++) {
+				ctx.drawImage(this.base_image, i * picture_size + this.center.x / 2, j * picture_size + this.center.y / 2, picture_size, picture_size);
 			}
 		}
 	}
