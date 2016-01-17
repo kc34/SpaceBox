@@ -43,18 +43,32 @@ var Controller = function() {
 	this.mousedown_handler = function(event) {
 		this.mouse_state = "DOWN";
 		this.mousedown_time = new Date();
+<<<<<<< Updated upstream
 		
 		this.mousedown_location = { x: event.x, y : event.y };
 		this.mouse_location = { x: event.x, y : event.y };
 		
 		this.rand = Math.random();
+=======
+		this.rand = Math.random();
+		this.mousedown_location = { x: event.x, y : event.y };
+		this.mouse_location = { x: event.x, y : event.y };
+>>>>>>> Stashed changes
 	}
 	
 	this.mouseup_handler = function(event) {
 		if (this.mouse_state == "DOWN") {
 			this.new_body_time = (new Date() - this.mousedown_time) / 1000;
 			var vector = AstroMath.screen_to_coordinate_plane(event);
+<<<<<<< Updated upstream
 			my_model.addBody(vector.x, vector.y, this.new_body_time, 0, 0, this.rand);
+=======
+			console.log("Star adding", vector.x, vector.y);
+
+			my_model.addBody(vector.x, vector.y, t, 0, 0, this.rand);
+		
+			my_model.addBody(vector.x, vector.y, this.new_body_time, 0, 0);
+>>>>>>> Stashed changes
 		} else if (this.mouse_state == "MOVE") {
 			var pos_vector_1 = AstroMath.screen_to_coordinate_plane(this.mousedown_location);
 			var pos_vector_2 = AstroMath.screen_to_coordinate_plane(event);
