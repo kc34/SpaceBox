@@ -32,6 +32,11 @@ class View {
 			this.moon_images[i].src = 'graphics/moon_' + (i + 1).toString() + '.png';
 		}
 		
+		this.explosion_sprites = new Array(16);
+		for (var i = 0; i < 16; i++) {
+			this.moon_images[i] = new Image();
+			this.moon_images[i].src = 'graphics/explosion/' + i.toString() + '.png';
+		}
     }
 
     draw() {
@@ -40,23 +45,20 @@ class View {
 		var bodies = my_model.get_bodies();
 		for (var obj in bodies) {
 			var vector = AstroMath.coordinate_plane_to_screen(bodies[obj].get_vector());
-			ctx.fillStyle = bodies[obj].color;
 			var radius = bodies[obj].radius / this.scale;
-			var startAngle = 0;
-			var endAngle = 2 * Math.PI;
-			var anticlockwise = false;
 			if (Star.prototype.isPrototypeOf(bodies[obj])) {
 				this.draw_at(this.glow_images[0], vector.x, vector.y, radius * 8 / 5);
 				this.draw_at(this.sun_images[0], vector.x, vector.y, radius);
 			} else if (Planet.prototype.isPrototypeOf(bodies[obj])) {
+				console.log(bodies[obj].img);
 				ctx.drawImage(
-					this.planet_images[3],
+					this.planet_images[bodies[obj].img],
 					vector.x - radius,
 					vector.y - radius,
 					2 * radius, 2 * radius);
 			} else {
 				ctx.drawImage(
-					this.moon_images[0],
+					this.moon_images[bodies[obj].img],
 					vector.x - radius,
 					vector.y - radius,
 					2 * radius, 2 * radius);
@@ -67,10 +69,11 @@ class View {
 		if (my_controller.mousedown == true) {
 			var x = my_controller.last_mouse_location.x;
 			var y = my_controller.last_mouse_location.y;
+			var r = my_controller.rand;
 			var t = new Date();
 			t -= my_controller.mousedown_time;
 			t /= 1000;
-			this.draw_from_time(t, x, y);
+			this.draw_from_time(t, x, y, r);
 		}
     }
     
@@ -91,15 +94,16 @@ class View {
 			image, x - radius, y - radius, 2 * radius, 2 * radius);
 	}
 	
-	draw_from_time(t, x, y) {
+	draw_from_time(t, x, y, r) {
 		var radius = AstroMath.time_to_radius(t);
 		radius /= this.scale;
-		console.log(radius);
 		
 		if (t < 1) {
-			this.draw_at(this.moon_images[0], x, y, radius);
+			var rdm = Math.floor(r * 2);
+			this.draw_at(this.moon_images[rdm], x, y, radius);
 		} else if (t < 2) {
-			this.draw_at(this.planet_images[0], x, y, radius);
+			var rdm = Math.floor(r * 5);
+			this.draw_at(this.planet_images[rdm], x, y, radius);
 		} else {
 			this.draw_at(this.glow_images[0], x, y, radius * 8 / 5);
 			this.draw_at(this.sun_images[0], x, y, radius);

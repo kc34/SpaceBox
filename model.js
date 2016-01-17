@@ -17,7 +17,7 @@ var Sector = function(){
 	// this.stars = [] 
 }
 
-Sector.prototype.addBody = function(x, y, t, vx, vy) { // Remind Kevin to edit values
+Sector.prototype.addBody = function(x, y, t, vx, vy, r) { // Remind Kevin to edit values
 	if (t > 2)
 	{
 		var new_body = new Star(x, y, t, vx, vy); // Remind Kevin to put stars.
@@ -26,12 +26,12 @@ Sector.prototype.addBody = function(x, y, t, vx, vy) { // Remind Kevin to edit v
 	}
 	else if (t < 1)
 	{
-		var new_body = new Moon(x, y, t, vx, vy);
+		var new_body = new Moon(x, y, t, vx, vy, r);
 		this.bodies.push(new_body);
 	}
 	else
 	{
-		var new_body = new Planet(x, y, t, vx, vy);
+		var new_body = new Planet(x, y, t, vx, vy, r);
 		this.bodies.push(new_body);
 		//this.planets.push(new_body);
 	}

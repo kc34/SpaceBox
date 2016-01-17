@@ -31,7 +31,7 @@ class Controller {
 		this.last_mouse_location = { x : event.x, y : event.y }
 		this.mouse_travelled = 0;
 		this.mousedown_time = new Date();
-
+		this.rand = Math.random();
 	}
 	
 	mouseup_handler(event) {
@@ -48,7 +48,7 @@ class Controller {
 			var vector = AstroMath.screen_to_coordinate_plane(event);
 			console.log("Star adding", vector.x, vector.y);
 
-			my_model.addBody(vector.x, vector.y, t, 0, 0);
+			my_model.addBody(vector.x, vector.y, t, 0, 0, this.rand);
 		
 		}
 		

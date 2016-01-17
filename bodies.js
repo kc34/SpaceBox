@@ -32,14 +32,16 @@ var Star = function(x, y, t, vx, vy) {
 	this.mass = 200 * Math.pow(this.radius, 3);
 }
 
-var Planet = function(x, y, t, vx, vy) {
+var Planet = function(x, y, t, vx, vy, r) {
 	Body.call(this, x, y, t, vx, vy);
 	this.type = 'Planet';
 	this.mass = 5 * Math.pow(this.radius,3);
+	this.img = Math.floor(r * 5);
 }
 
-var Moon = function(x, y, t, vx, vy) {
+var Moon = function(x, y, t, vx, vy, r) {
 	Body.call(this, x, y, t, vx, vy);
 	this.type = 'Moon';
 	this.mass = 2 * Math.pow(this.radius,3);
+	this.img = Math.floor(r * 2);
 }
