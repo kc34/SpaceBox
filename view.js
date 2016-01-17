@@ -4,7 +4,6 @@ class View {
         this.name = "I am a view." // Placeholder name.
         this.center = { x : 0, y : 0 }
         this.scale = 1;
-        
         this.base_image = new Image();
         this.base_image.src = 'graphics/space_bg.jpg';
         
@@ -67,10 +66,14 @@ class View {
 		if (my_controller.mousedown == true) {
 			var x = my_controller.last_mouse_location.x;
 			var y = my_controller.last_mouse_location.y;
-			var t = new Date();
-			t -= my_controller.mousedown_time;
-			t /= 1000;
-			this.draw_from_time(t, x, y);
+			if (my_controller.fixed_t == -1) {
+				var t = new Date();
+				t -= my_controller.mousedown_time;
+				t /= 1000;
+				this.draw_from_time(t, x, y);
+			} else {
+				this.draw_from_time(my_controller.fixed_t, x, y);
+			} 
 		}
     }
     
@@ -82,7 +85,7 @@ class View {
 			}
 		}
 	}
-    
+	
 	/**
 	 * The following function will draw a picture given center and radius.
 	 */
@@ -94,15 +97,14 @@ class View {
 	draw_from_time(t, x, y) {
 		var radius = AstroMath.time_to_radius(t);
 		radius /= this.scale;
-		console.log(radius);
 		
 		if (t < 1) {
 			this.draw_at(this.moon_images[0], x, y, radius);
-		} else if (t < 2) {
-			this.draw_at(this.planet_images[0], x, y, radius);
-		} else {
+		} else if (t > 2) {
 			this.draw_at(this.glow_images[0], x, y, radius * 8 / 5);
 			this.draw_at(this.sun_images[0], x, y, radius);
+		} else {
+			this.draw_at(this.planet_images[0], x, y, radius);
 		}
 	}
 }
@@ -141,5 +143,6 @@ class AstroMath {
 		} else {
 			return 50 * t;
 		}
-	}
+	}		
+		
 }
