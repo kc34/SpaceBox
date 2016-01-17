@@ -138,7 +138,7 @@ Sector.prototype.neighbor = function(body) {
 		}
 		var n_idx = dist_array.indexOf(min_dist);
 		var best_neighbor = neighbor_array[n_idx];
-		console.log(body, best_neighbor, neighbor_array, n_idx);
+		// console.log(body, best_neighbor, neighbor_array, n_idx);
 		return this.acceleration(body, best_neighbor);
 	} else {
 		return [0, 0];

@@ -4,7 +4,6 @@ class View {
         this.name = "I am a view." // Placeholder name.
         this.center = { x : 0, y : 0 }
         this.scale = 1;
-        
         this.base_image = new Image();
         this.base_image.src = 'graphics/space_bg.jpg';
         
@@ -66,6 +65,7 @@ class View {
 		}
 		
 		// Time to draw a tentative star.
+<<<<<<< HEAD
 		if (my_controller.mousedown == true) {
 			var x = my_controller.last_mouse_location.x;
 			var y = my_controller.last_mouse_location.y;
@@ -74,6 +74,26 @@ class View {
 			t -= my_controller.mousedown_time;
 			t /= 1000;
 			this.draw_from_time(t, x, y, r);
+=======
+		if (my_controller.mouse_state == "DOWN") {
+			var x = my_controller.mouse_location.x;
+			var y = my_controller.mouse_location.y;
+			var t = new Date();
+			t -= my_controller.mousedown_time;
+			t /= 1000;
+			this.draw_from_time(t, x, y);
+		} else if (my_controller.mouse_state == "MOVE") {
+			var x = my_controller.mousedown_location.x;
+			var y = my_controller.mousedown_location.y;
+			var new_x = my_controller.mouse_location.x;
+			var new_y = my_controller.mouse_location.y;
+			ctx.strokeStyle = "#FFFFFF";
+			ctx.beginPath();
+			ctx.moveTo(x, y);
+			ctx.lineTo(new_x, new_y);
+			ctx.stroke();
+			this.draw_from_time(my_controller.new_body_time, x, y);
+>>>>>>> FETCH_HEAD
 		}
     }
     
@@ -85,7 +105,7 @@ class View {
 			}
 		}
 	}
-    
+	
 	/**
 	 * The following function will draw a picture given center and radius.
 	 */
@@ -99,14 +119,21 @@ class View {
 		radius /= this.scale;
 		
 		if (t < 1) {
+<<<<<<< HEAD
 			var rdm = Math.floor(r * 2);
 			this.draw_at(this.moon_images[rdm], x, y, radius);
 		} else if (t < 2) {
 			var rdm = Math.floor(r * 5);
 			this.draw_at(this.planet_images[rdm], x, y, radius);
 		} else {
+=======
+			this.draw_at(this.moon_images[0], x, y, radius);
+		} else if (t > 2) {
+>>>>>>> FETCH_HEAD
 			this.draw_at(this.glow_images[0], x, y, radius * 8 / 5);
 			this.draw_at(this.sun_images[0], x, y, radius);
+		} else {
+			this.draw_at(this.planet_images[0], x, y, radius);
 		}
 	}
 }
@@ -145,5 +172,6 @@ class AstroMath {
 		} else {
 			return 50 * t;
 		}
-	}
+	}		
+		
 }
