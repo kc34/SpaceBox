@@ -87,6 +87,15 @@ var View = function() {
 		ctx.font = "30px Courier New";
 		ctx.fillText("High Score: " + my_model.high_score.toString(), 10, 30);
 		ctx.fillText("Score: " + my_model.score.toString(), 10, 70);
+		
+		// Draw the button that leads to the about page.
+		ctx.fillStyle = "#888888";
+		ctx.fillRect( 10, window.innerHeight - 10 - 20, 20, 20);
+		ctx.strokeStyle = "#AAAAAA";
+		ctx.strokeRect( 10, window.innerHeight - 10 - 20, 20, 20);
+		ctx.fillStyle = "#FFFFFF";
+		ctx.font = "20px Arial";
+		ctx.fillText("?", 14, window.innerHeight - 13.75); 
     }
     
     this.draw_background = function() {

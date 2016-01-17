@@ -37,7 +37,11 @@ var Controller = function() {
     }
     
     this.click_handler = function(event) {
-		// Do nothing ... for now.
+		if (event.x < 10 + 20 && event.x > 10) {
+			if (event.y < window.innerHeight - 10 && event.y > window.innerHeight - 10 - 20) {
+				window.location = "about.html";
+			}
+		}
 	}
     
 	this.mousedown_handler = function(event) {
