@@ -65,13 +65,13 @@ var View = function() {
 			}
 		}
 		
-		this.collisions.push([my_model.collision_update(),10])
+		this.collisions.push([my_model.collision_update(),10]);
 		if (this.collisions.length != 0) {
-		for (var idx = 0; idx < this.collisions.length; idx ++) {
-			this.draw_at(this.collision_images[this.collisions[idx][1]], this.collisions[idx][0][0], this.collisions[idx][0][1], 10);
-			this.collisions[idx][1] -= 1;
+			for (var idx = 0; idx < this.collisions.length; idx ++) {
+				this.draw_at(this.collision_images[this.collisions[idx][1]], this.collisions[idx][0][0], this.collisions[idx][0][1], 10);
+				this.collisions[idx][1] -= 1;
+			}
 		}
-
 		for (var idx = 0; idx < this.collisions.length; idx ++) {
 			if (this.collisions[idx][1] == 0) {
 				this.collisions.splice(idx, 1);
