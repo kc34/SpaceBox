@@ -16,9 +16,12 @@ var Sector = function(){
 	// this.planets = [];
 	// this.stars = [] 
 	this.running = true;
+	this.k = 5;
 }
 
 Sector.prototype.addBody = function(x, y, t, vx, vy, r) { // Remind Kevin to edit values
+	vx *= this.k;
+	vy *= this.k;
 	if (t > 2)
 	{
 		var new_body = new Star(x, y, t, vx, vy); // Remind Kevin to put stars.

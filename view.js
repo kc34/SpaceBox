@@ -12,6 +12,8 @@ class View {
 			this.sun_images[i] = new Image();
 			this.sun_images[i].src = 'graphics/star_' + (i + 1).toString() + '.png';
 		}
+		
+		this.sun_resize = 4.0 / 3.0;
         
         this.glow_images = new Array(8);
         for (var i = 0; i < 8; i++) {
@@ -25,11 +27,15 @@ class View {
 			this.planet_images[i].src = 'graphics/planet_' + (i + 1).toString() + '.png';
 		}
 		
+		this.planet_resize = 4.0 / 3.0
+		
 		this.moon_images = new Array(2);
 		for (var i = 0; i < 2; i++) {
 			this.moon_images[i] = new Image();
 			this.moon_images[i].src = 'graphics/moon_' + (i + 1).toString() + '.png';
 		}
+		
+		this.moon_resize = 3.0 / 2.0
 		
     }
 
@@ -41,15 +47,18 @@ class View {
 			var vector = AstroMath.coordinate_plane_to_screen(bodies[obj].get_vector());
 			var radius = bodies[obj].radius / this.scale;
 			if (Star.prototype.isPrototypeOf(bodies[obj])) {
+				radius *= this.sun_resize;
 				this.draw_at(this.glow_images[7], vector.x, vector.y, radius * 8 / 5);
 				this.draw_at(this.sun_images[7], vector.x, vector.y, radius);
 			} else if (Planet.prototype.isPrototypeOf(bodies[obj])) {
+				radius *= this.planet_resize;
 				ctx.drawImage(
 					this.planet_images[bodies[obj].img],
 					vector.x - radius,
 					vector.y - radius,
 					2 * radius, 2 * radius);
 			} else {
+				radius *= this.moon_resize;
 				ctx.drawImage(
 					this.moon_images[bodies[obj].img],
 					vector.x - radius,
@@ -105,6 +114,7 @@ class View {
 			var rdm = Math.floor(r * 2);
 			this.draw_at(this.moon_images[rdm], x, y, radius);
 		} else if (t > 2) {
+			radius *= this.sun_resize;
 			this.draw_at(this.glow_images[7], x, y, radius * 8 / 5);
 			this.draw_at(this.sun_images[7], x, y, radius);
 		} else {
@@ -131,8 +141,8 @@ class AstroMath {
 	
 	static screen_to_coordinate_plane(vector) {
 		var new_vector = {
-			x : ((vector.x) - ( window.innerWidth / 2 + my_view.center.x )) * my_view.scale,
-			y : ((vector.y) - ( window.innerHeight / 2 + my_view.center.y )) * my_view.scale
+			x : my_view.scale * (vector.x - window.innerWidth / 2) - my_view.center.x,
+			y : my_view.scale * (vector.y - window.innerHeight / 2) - my_view.center.y
 		}
 		return new_vector;
 	}
