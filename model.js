@@ -17,22 +17,22 @@ var Sector = function(){
 	this.stars = [] 
 }
 
-Sector.prototype.addBody = function(x,y,t,v) { // Remind Kevin to edit values
+Sector.prototype.addBody = function(x, y, t, vx, vy) { // Remind Kevin to edit values
 	if (t > 2)
 	{
-		var new_body = new Star(x,y,t,v); // Remind Kevin to put stars.
+		var new_body = new Star(x, y, t, vx, vy); // Remind Kevin to put stars.
 		this.bodies.push(new_body);
 		this.stars.push(new_body)
 	}
 	else if (t < 1)
 	{
-		var new_body = new Moon(x,y,t,v);
+		var new_body = new Moon(x, y, t, vx, vy);
 		this.bodies.push(new_body);
 		this.planets.push(new_body);
 	}
 	else
 	{
-		var new_body = new Planet(x,y,t,v);
+		var new_body = new Planet(x, y, t, vx, vy);
 		this.bodies.push(new_body);
 	}
 }
@@ -113,26 +113,3 @@ Sector.prototype.acceleration = function(body1, body2, dist, x1, y1) {
 	var sin = -y1/dist;
 	return [magnitude*cos, magnitude*sin]
 }
-/*
-var Body = function(x, y, t, v) {
-	this.x = x;
-	this.y = y;
-}
-
-var Star = function(x, y, t, v) {
-	Body.call(this, x, y, t, v);
-	this.color = "#FFFF00";
-	this.radius = 400;
-}
-
-var Planet = function(x, y, t, v) {
-	Body.call(this, x, y, t, v);
-	this.color = "#00FF00"
-	this.radius = 20;
-}
-
-var Moon = function(x, y, t, v) {
-	Body.call(this, x, y, t, v);
-	this.color = "#888888";
-	this.radius = 5;
-}*/

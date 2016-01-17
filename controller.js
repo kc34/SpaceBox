@@ -66,8 +66,8 @@ class Controller {
 			this.mouse_travelled += Math.abs(mouse_delta.x) + Math.abs(mouse_delta.y);
 			this.last_mouse_location.x = event.x;
 			this.last_mouse_location.y = event.y;
-			my_view.center.x += mouse_delta.x;
-			my_view.center.y += mouse_delta.y;
+			my_view.center.x += mouse_delta.x * my_view.scale;
+			my_view.center.y += mouse_delta.y * my_view.scale;
 		}
 		
 	}

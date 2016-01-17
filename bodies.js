@@ -4,6 +4,7 @@ var Body = function(x, y, t, vx, vy) {
 	this.type = 'Generic space body';
 	this.x_position = x;
 	this.y_position = y;
+	this.radius = AstroMath.time_to_radius(t);
 	this.x_velocity = vx;
 	this.y_velocity = vy;
 	this.get_vector = function() {
@@ -27,20 +28,17 @@ var Body = function(x, y, t, vx, vy) {
 var Star = function(x, y, t, vx, vy) {
 	Body.call(this, x, y, t, 0, 0);
 	this.type = 'Star';
-	this.radius = 100 * t + 10; // Multipied all radius by ten
 	this.mass = 100 * Math.pow(this.radius, 3);
 }
 
 var Planet = function(x, y, t, vx, vy) {
 	Body.call(this, x, y, t, vx, vy);
 	this.type = 'Planet';
-	this.radius = 10 * t + 5;
 	this.mass = 5 * Math.pow(this.radius,3);
 }
 
 var Moon = function(x, y, t, vx, vy) {
 	Body.call(this, x, y, t, vx, vy);
 	this.type = 'Moon';
-	this.radius = 2 * t + 2;
 	this.mass = 2 * Math.pow(this.radius,3);
 }
