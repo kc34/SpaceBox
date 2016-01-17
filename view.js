@@ -33,7 +33,10 @@ var View = function() {
 		this.moon_images[i].src = 'graphics/moon_' + (i + 1).toString() + '.png';
 	}
 	
-	this.moon_resize = 3.0 / 2.0
+	this.moon_resize = 3.0 / 2.0;
+	
+	this.music = new Audio("one_sly_move.mp3");
+	this.music.play();
 		
 
     this.draw = function() {
