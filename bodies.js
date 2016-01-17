@@ -1,5 +1,3 @@
-"use strict"
-
 var Body = function(x, y, t, vx, vy) {
 	this.type = 'Generic space body';
 	this.x_position = x;

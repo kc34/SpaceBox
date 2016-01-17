@@ -1,4 +1,3 @@
-"use strict"
 /**
  * Hey guys! I'm going to write kind of a template here that you guys
  * can fill out however you like. If you want to change function names

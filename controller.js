@@ -1,17 +1,15 @@
-"use strict"
-class Controller {
-    constructor() {
-        this.name = "I am a controller." // Placeholder name.
-        this.mouse_state = null;
-        this.mousedown_time = null;
-        this.mousedown_location = null;
-        this.mouse_location = null;
-        this.GROW_MOVE_STOP_DIST = 2;
-        this.new_body_time = null;
-        this.rand = null;
-    }
 
-    keydown_handler(key_event) {
+var Controller = function() { 
+	this.name = "I am a controller." // Placeholder name.
+	this.mouse_state = null;
+	this.mousedown_time = null;
+	this.mousedown_location = null;
+	this.mouse_location = null;
+	this.GROW_MOVE_STOP_DIST = 2;
+	this.new_body_time = null;
+	this.rand = null;
+
+    this.keydown_handler = function(key_event) {
 		var keynum = window.event ? key_event.keyCode : key_event.which; // window.event = userIsIE
 		var key = String.fromCharCode(keynum);
 		if (key == "&") { // Up arrow
@@ -37,11 +35,11 @@ class Controller {
 		console.log(key);
     }
     
-    click_handler(event) {
+    this.click_handler = function(event) {
 		// Do nothing ... for now.
 	}
     
-	mousedown_handler(event) {
+	this.mousedown_handler = function(event) {
 		this.mouse_state = "DOWN";
 		this.mousedown_time = new Date();
 		
@@ -51,7 +49,7 @@ class Controller {
 		this.rand = Math.random();
 	}
 	
-	mouseup_handler(event) {
+	this.mouseup_handler = function(event) {
 		if (this.mouse_state == "DOWN") {
 			this.new_body_time = (new Date() - this.mousedown_time) / 1000;
 			var vector = AstroMath.screen_to_coordinate_plane(event);
@@ -71,7 +69,7 @@ class Controller {
 		
 	}
 	
-	mousemove_handler(event) {
+	this.mousemove_handler = function(event) {
 		if (this.mouse_state == "DOWN") {
 			var mouse_delta = {
 				x : event.x - this.mousedown_location.x,
