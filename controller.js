@@ -14,24 +14,24 @@ var Controller = function() {
 		var keynum = window.event ? key_event.keyCode : key_event.which; // window.event = userIsIE
 		var key = String.fromCharCode(keynum);
 		if (key == "&") { // Up arrow
-			my_view.scale /= 1.5;
-			console.log(my_view.scale);
+			my_viewer.scale /= 1.5;
+			console.log(my_viewer.scale);
 		} else if (key == "(") { // Down arrow
-			if (my_view.scale < 3) { 
-				my_view.scale *= 1.5;
+			if (my_viewer.scale < 10) { 
+				my_viewer.scale *= 1.5;
 			}
-			console.log(my_view.scale);
+			console.log(my_viewer.scale);
 		} else if (key == " ") {
 			my_model.running = !(my_model.running);
 			console.log("Banana phone!");
 		} else if (key == "W") {
-			my_view.center.y += my_view.scale * 100;
+			my_viewer.center.y += my_viewer.scale * 100;
 		} else if (key == "S") {
-			my_view.center.y -= my_view.scale * 100;
+			my_viewer.center.y -= my_viewer.scale * 100;
 		} else if (key == "A") {
-			my_view.center.x += my_view.scale * 100;
+			my_viewer.center.x += my_viewer.scale * 100;
 		} else if (key == "D") {
-			my_view.center.x -= my_view.scale * 100;
+			my_viewer.center.x -= my_viewer.scale * 100;
 		}
 		console.log(key);
     }
@@ -48,8 +48,8 @@ var Controller = function() {
 		this.mouse_state = "DOWN";
 		this.mousedown_time = new Date();
 		
-		this.mousedown_location = { x: event.x, y : event.y };
-		this.mouse_location = { x: event.x, y : event.y };
+		this.mousedown_location = event;
+		this.mouse_location = event;
 		
 		this.rand = Math.random();
 	}
@@ -58,15 +58,12 @@ var Controller = function() {
 		if (this.mouse_state == "DOWN") {
 			this.new_body_time = (new Date() - this.mousedown_time) / 1000;
 			var vector = AstroMath.screen_to_coordinate_plane(event);
-			my_model.addBody(vector.x, vector.y, this.new_body_time, 0, 0, this.rand);
+			my_model.addBody(vector, this.new_body_time, AstroMath.Vector.ZERO, this.rand);
 		} else if (this.mouse_state == "MOVE") {
 			var pos_vector_1 = AstroMath.screen_to_coordinate_plane(this.mousedown_location);
 			var pos_vector_2 = AstroMath.screen_to_coordinate_plane(event);
-			var delta_vector = {
-				x : pos_vector_2.x - pos_vector_1.x,
-				y : pos_vector_2.y - pos_vector_1.y
-			}
-			my_model.addBody(pos_vector_1.x, pos_vector_1.y, this.new_body_time, delta_vector.x, delta_vector.y, this.rand);
+			var delta_vector = pos_vector_2.subtract(pos_vector_1);
+			my_model.addBody(pos_vector_1, this.new_body_time, delta_vector, this.rand);
 			
 		}
 		
@@ -78,22 +75,18 @@ var Controller = function() {
 		var time_since_mouse_down = (new Date() - this.mousedown_time) / 1000;
 		
 		if (this.mouse_state == "DOWN" || this.mouse_state == "PAN") {
-			var mouse_delta = {
-				x : event.x - this.mousedown_location.x,
-				y : event.y - this.mousedown_location.y
-			}
-			var dist = AstroMath.distance(0, 0, mouse_delta.x, mouse_delta.y);
+			var mouse_delta = event.subtract(this.mousedown_location);
+			var dist = mouse_delta.norm();
 			if (time_since_mouse_down > 0.25 && this.mouse_state != "PAN") {
 				if (dist > this.GROW_MOVE_STOP_DIST) {
 					this.mouse_state = "MOVE";
 					this.new_body_time = (new Date() - this.mousedown_time) / 1000;
 				}
 			} else if (this.mouse_state == "PAN" || (time_since_mouse_down <= 0.25 && dist > this.GROW_MOVE_STOP_DIST)) {
-				my_view.center.x += (event.x - this.mouse_location.x) * my_view.scale;
-				my_view.center.y += (event.y - this.mouse_location.y) * my_view.scale;
+				my_viewer.center = my_viewer.center.add(event.subtract(this.mouse_location).sc_mult(my_viewer.scale));
 				this.mouse_state = "PAN";
 			}
 		}
-		this.mouse_location = { x: event.x , y : event.y }
+		this.mouse_location = event;
 	}
 }

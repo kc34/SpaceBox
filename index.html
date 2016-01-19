@@ -16,15 +16,28 @@ html, body {
 </style>
 
 <script src="model.js"></script>
-<script src="view.js"></script>
+<script src="viewer.js"></script>
 <script src="controller.js"></script>
 <script src="bodies.js"></script>
 <script src="easing.js"></script>
 
 <script>
+	
+/**
+ * Changelog:
+ *  - Renamed View to Viewer.
+ *  - Moved AstroMath from viewer.js to model.js.
+ *  - Adding vectors and vector methods to AstroMath.
+ *  - Removed rounded from ease-function calls.
+ *  - Vector implementation. AstroMath now has teeth!
+ *  - Viewer background size reduction decreased.
+ *     - This raises the cap on the zoom out limit!
+ *  - Space body minimum size on draw fixed.
+ *  - 
+ */
 
 var my_controller = new Controller();
-var my_view = new View();
+var my_viewer = new Viewer();
 var my_model =  new Sector();
 
 /**
@@ -56,27 +69,32 @@ function main() {
         accumulator -= TIME_STEP;
     }
     
-	my_view.draw();
+	my_viewer.draw();
 }
 
 // Borrowed from http://stackoverflow.com/questions/1846599
 function keydown_handler(key) {
+	event = new AstroMath.Vector(event);
 	my_controller.keydown_handler(key);
 }
 
 function mousedown_handler(event) {
+	event = new AstroMath.Vector(event);
 	my_controller.mousedown_handler(event);
 }
 
 function mouseup_handler(event) {
+	event = new AstroMath.Vector(event);
 	my_controller.mouseup_handler(event);
 }
 
 function mousemove_handler(event) {
+	event = new AstroMath.Vector(event);
 	my_controller.mousemove_handler(event);
 }
 
 function click_handler(event) {
+	event = new AstroMath.Vector(event);
 	my_controller.click_handler(event);
 }
 

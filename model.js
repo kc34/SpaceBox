@@ -12,31 +12,31 @@
  
 var Sector = function(){
 	this.bodies = [];
-	// this.planets = [];
-	// this.stars = [] 
 	this.running = true;
 	this.high_score = 0;
 	this.score = 0;
 	this.k = 5;
 }
 
-Sector.prototype.addBody = function(x, y, t, vx, vy, r) { // Remind Kevin to edit values
-	vx *= this.k;
-	vy *= this.k;
+Sector.prototype.addBody = function(position_vector, t, velocity_vector, r) { // Remind Kevin to edit values
+	var x = position_vector.x;
+	var y = position_vector.y;
+	var vx = this.k * velocity_vector.x;
+	var vy = this.k * velocity_vector.y;
 	if (t > 2)
 	{
-		var new_body = new Star(x, y, t, vx, vy); // Remind Kevin to put stars.
+		var new_body = new Star(position_vector, velocity_vector, t); // Remind Kevin to put stars.
 		this.bodies.push(new_body);
 		//this.stars.push(new_body)
 	}
 	else if (t < 1)
 	{
-		var new_body = new Moon(x, y, t, vx, vy, r);
+		var new_body = new Moon(position_vector, velocity_vector, t, r);
 		this.bodies.push(new_body);
 	}
 	else
 	{
-		var new_body = new Planet(x, y, t, vx, vy, r);
+		var new_body = new Planet(position_vector, velocity_vector, t, r);
 		this.bodies.push(new_body);
 		//this.planets.push(new_body);
 	}
@@ -49,10 +49,11 @@ Sector.prototype.update = function(dt) {
 			if (this.bodies.length > 1) {
 				
 				var accel_vector = this.neighbor(this.bodies[idx]);
-				var x_accel = accel_vector[0];
-				var y_accel = accel_vector[1];
+				var x_accel = accel_vector.x;
+				var y_accel = accel_vector.y;
+				//console.log(x_accel, y_accel)
 				
-				this.bodies[idx].accelerate(x_accel, y_accel, dt);
+				this.bodies[idx].accelerate(accel_vector, dt);
 			}
 			this.collision_update();
 		}
@@ -60,7 +61,7 @@ Sector.prototype.update = function(dt) {
 	var score = 0;
 	for (var idx in this.bodies) {
 		if (Planet.prototype.isPrototypeOf(this.bodies[idx])) {
-			var velocity = AstroMath.distance(0, 0, this.bodies[idx].x_velocity, this.bodies[idx].y_velocity);
+			var velocity = this.bodies[idx].velocity_vector.norm();
 			if (velocity > 100) {
 				score += 10000 / Math.max(velocity, 1);
 			}
@@ -80,34 +81,26 @@ Sector.prototype.collision_update = function(){
 	for (var idx = 0; idx < this.bodies.length - 1; idx++) {
 		for (var idx2 = idx + 1; idx2 < this.bodies.length; idx2++) {
 			if (idx != idx2) {
-				var x1 = this.bodies[idx].x_position;
-				var x2 = this.bodies[idx2].x_position;
-				var y1 = this.bodies[idx].y_position;
-				var y2 = this.bodies[idx2].y_position; // Remind Kevin to add index.
-				var x_dist = (x1-x2);
-				var y_dist = (y1-y2);
-				var t_dist = AstroMath.distance(x_dist, y_dist, 0, 0);
+				var t_dist = AstroMath.distance(this.bodies[idx].get_vector(), this.bodies[idx2].get_vector());
 				var required_space = this.bodies[idx].radius + this.bodies[idx2].radius;
 				if (required_space > t_dist){
 					console.log("COLLISION DETECTED", required_space, t_dist)
 					if (Star.prototype.isPrototypeOf(this.bodies[idx])) {
+						var coor = this.bodies[idx2].get_vector();
 						this.bodies.splice(idx2, 1);
-						var coor = (x2,y2);
 						col_array[0].push(coor);
 					} 
 					else if (Star.prototype.isPrototypeOf(this.bodies[idx2])){
+						var coor = this.bodies[idx].get_vector();
 						this.bodies.splice(idx, 1);
-						var coor = (x1,y1);
 						col_array[0].push(coor);
 					}
 					else {
 						console.log(this.bodies, idx);
 						console.log("Removing!", this.bodies[idx]);
+						var coor = this.bodies[idx].get_vector().add(this.bodies[idx2].get_vector()).sc_mult(0.5);
 						this.bodies.splice(idx, 1);
 						this.bodies.splice(idx2 - 1, 1);
-						var x_coor = (x1+x2)/2;
-						var y_coor = (y1+y2)/2;
-						var coor = (x_coor,y_coor);
 						col_array[1].push(coor);
 					}
 				}
@@ -141,7 +134,7 @@ Sector.prototype.neighbor = function(body) {
 	
 	if (orbitables.length != 0) {
 		for (var idx in orbitables) {
-			var dist = AstroMath.distance(body.x_position, body.y_position, orbitables[idx].x_position, orbitables[idx].y_position);
+			var dist = AstroMath.distance(body.get_vector(), orbitables[idx].get_vector());
 			if (dist != 0){
 				dist_array.push(dist);
 				neighbor_array.push(orbitables[idx]);
@@ -156,26 +149,104 @@ Sector.prototype.neighbor = function(body) {
 		}
 		var n_idx = dist_array.indexOf(min_dist);
 		var best_neighbor = neighbor_array[n_idx];
-		// console.log(body, best_neighbor, neighbor_array, n_idx);
 		return this.acceleration(body, best_neighbor);
 	} else {
-		return [0, 0];
+		return AstroMath.Vector.ZERO;
 	}
 }
 
 // calculates the acceleration for body1 (body2 is unaffected by this acceleration)
 Sector.prototype.acceleration = function(body1, body2) {
-	
-	var dx = body2.x_position - body1.x_position;
-	var dy = body2.y_position - body1.y_position;
-	var dist = AstroMath.distance(0, 0, dx, dy);
+	var d = body2.get_vector().subtract(body1.get_vector());
+	var dist = d.norm();
 	if (dist == 0) {
 		return [0, 0];
 	}
 	var magnitude = body2.mass / Math.pow(dist, 2);
-	// console.log(magnitude);
 	
-	var cos = dx / dist;
-	var sin = dy / dist;
-	return [magnitude*cos, magnitude*sin]
+	var cos = d.x / dist;
+	var sin = d.y / dist;
+	return AstroMath.Vector.from_components(magnitude*cos, magnitude*sin);
 }
+
+var AstroMath = function() {};
+	
+AstroMath.distance = function(vectorA, vectorB) {
+	var distance = Math.pow(Math.pow(vectorA.x - vectorB.x, 2) + Math.pow(vectorA.y - vectorB.y, 2), 0.5);
+	return distance;
+}
+	
+AstroMath.coordinate_plane_to_screen = function(vector) {
+	/*var new_vector = {
+		x : 1 / my_viewer .scale * (vector.x + my_viewer .center.x) + window.innerWidth / 2,
+		y : 1 / my_viewer .scale * (vector.y + my_viewer .center.y) + window.innerHeight / 2
+	}*/
+	return AstroMath.Vector.from_components(
+		1 / my_viewer.scale * (vector.x + my_viewer.center.x) + window.innerWidth / 2,
+		1 / my_viewer.scale * (vector.y + my_viewer.center.y) + window.innerHeight / 2
+	);
+}
+
+AstroMath.screen_to_coordinate_plane = function(vector) {
+	var new_vector = {
+		x : my_viewer .scale * (vector.x - window.innerWidth / 2) - my_viewer .center.x,
+		y : my_viewer .scale * (vector.y - window.innerHeight / 2) - my_viewer .center.y
+	}
+	return AstroMath.Vector.from_components(
+		my_viewer .scale * (vector.x - window.innerWidth / 2) - my_viewer .center.x,
+		my_viewer .scale * (vector.y - window.innerHeight / 2) - my_viewer .center.y
+	);
+}
+
+AstroMath.time_to_radius = function(t) {
+	if (t < 1) {
+		return 2 * t + 2;
+	} else if (t < 2) {
+		return 10 * t;
+	} else if (t < 2.5) {
+		var my_iteration = (t - 2) / (2.5 - 2) * 30;
+		return easeOutBack(my_iteration, 20, 105, 30);
+	} else {
+		return 50 * t;
+	}
+}
+
+AstroMath.sun_color_from_radius = function(radius) {
+	if (radius < AstroMath.time_to_radius(3.0)) {
+		return 7;
+	} else if (radius < AstroMath.time_to_radius(7)) {
+		var big_radius = AstroMath.time_to_radius(7);
+		var small_radius = AstroMath.time_to_radius(3);
+		var color = Math.floor((big_radius - radius) / (big_radius - small_radius) * 7);
+		return color;
+	} else {
+		return 0;
+	}
+}
+
+AstroMath.Vector = function(vector) {
+	this.x = vector.x;
+	this.y = vector.y;
+}
+
+AstroMath.Vector.from_components = function(x, y) {
+	return new AstroMath.Vector({x : x, y : y});
+}
+
+AstroMath.Vector.prototype.add = function(vector) {
+	return AstroMath.Vector.from_components(this.x + vector.x, this.y + vector.y);
+}
+
+AstroMath.Vector.prototype.subtract = function(vector) {
+	return new AstroMath.Vector.from_components(this.x - vector.x, this.y - vector.y);
+}
+
+AstroMath.Vector.prototype.sc_mult = function(scalar) {
+	return new AstroMath.Vector.from_components(this.x * scalar, this.y * scalar);
+}
+
+AstroMath.Vector.prototype.norm = function() {
+	return AstroMath.distance(AstroMath.Vector.ZERO, this);
+}
+
+AstroMath.Vector.ZERO = AstroMath.Vector.from_components(0, 0);
