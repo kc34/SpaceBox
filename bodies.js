@@ -14,8 +14,6 @@ var Body = function(position_vector, velocity_vector, t) {
 	}
 }
 
-
-
 var Star = function(position_vector, velocity_vector, t) {
 	Body.call(this, position_vector, AstroMath.Vector.ZERO, t);
 	this.type = 'Star';

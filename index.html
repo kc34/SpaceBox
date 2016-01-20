@@ -33,7 +33,7 @@ html, body {
  *  - Viewer background size reduction decreased.
  *     - This raises the cap on the zoom out limit!
  *  - Space body minimum size on draw fixed.
- *  - 
+ *  - Star changes color more gradually.
  */
 
 var my_controller = new Controller();
@@ -78,33 +78,30 @@ function keydown_handler(key) {
 	my_controller.keydown_handler(key);
 }
 
-function mousedown_handler(event) {
-	event = new AstroMath.Vector(event);
-	my_controller.mousedown_handler(event);
-}
-
-function mouseup_handler(event) {
-	event = new AstroMath.Vector(event);
-	my_controller.mouseup_handler(event);
-}
-
-function mousemove_handler(event) {
-	event = new AstroMath.Vector(event);
-	my_controller.mousemove_handler(event);
-}
-
-function click_handler(event) {
-	event = new AstroMath.Vector(event);
-	my_controller.click_handler(event);
-}
-
 var canvas = document.getElementById("myCanvas");
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
-canvas.addEventListener('click', click_handler, false);
-canvas.addEventListener('mousedown', mousedown_handler, false);
-canvas.addEventListener('mouseup', mouseup_handler, false);
-canvas.addEventListener('mousemove', mousemove_handler, false);
+
+canvas.addEventListener('click', function(event) {
+	my_controller["click_handler"](event);
+}, false);
+
+canvas.addEventListener('mousedown', function(event) {
+	my_controller["mousedown_handler"](event);
+}, false);
+
+canvas.addEventListener('mouseup', function(event) {
+	my_controller["mouseup_handler"](event);
+}, false);
+
+canvas.addEventListener('mousemove', function(event) {
+	my_controller["mousemove_handler"](event);
+}, false);
+
+canvas.addEventListener('mousewheel', function(event) {
+	my_controller["mousewheel_handler"](event);
+}, false);
+
 canvas.onmousedown = function(){return false;};
 
 

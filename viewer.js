@@ -1,38 +1,15 @@
 var Viewer = function() {
 	this.center = AstroMath.Vector.from_components(0, 0);
 	this.scale = 1;
-	this.base_image = new Image();
-	this.base_image.src = 'graphics/space_bg.jpg';
-	
-	this.sun_images = new Array(8);
-	for (var i = 0; i < 8; i++) {
-		this.sun_images[i] = new Image();
-		this.sun_images[i].src = 'graphics/star_' + (i + 1).toString() + '.png';
-	}
+	this.images = get_images();
 	
 	this.sun_resize = 4.0 / 3.0;
 	
-	this.glow_images = new Array(8);
-	for (var i = 0; i < 8; i++) {
-		this.glow_images[i] = new Image();
-		this.glow_images[i].src = 'graphics/glow_' + (i + 1).toString() + '.png';
-	}
-	
-	this.planet_images = new Array(5);
-	for (var i = 0; i < 5; i++) {
-		this.planet_images[i] = new Image();
-		this.planet_images[i].src = 'graphics/planet_' + (i + 1).toString() + '.png';
-	}
-	
 	this.planet_resize = 4.0 / 3.0
 	
-	this.moon_images = new Array(2);
-	for (var i = 0; i < 2; i++) {
-		this.moon_images[i] = new Image();
-		this.moon_images[i].src = 'graphics/moon_' + (i + 1).toString() + '.png';
-	}
-	
 	this.moon_resize = 3.0 / 2.0;
+	
+	this.scaling_factor = 1.5;
 	
 	this.music = new Audio("one_sly_move.mp3");
 	this.music.play();
@@ -46,18 +23,12 @@ var Viewer = function() {
 			var vector = AstroMath.coordinate_plane_to_screen(bodies[obj].get_vector());
 			var radius = bodies[obj].radius / this.scale;
 			if (Star.prototype.isPrototypeOf(bodies[obj])) {
-				sun_color = AstroMath.sun_color_from_radius(radius * this.scale);
-				radius *= this.sun_resize;
-				this.draw_at(this.glow_images[sun_color], vector, radius * 8 / 5);
-				this.draw_at(this.sun_images[sun_color], vector, radius);
+				var star_color = AstroMath.star_color_from_radius(radius * my_viewer .scale);
+				this.draw_at("star", -1, vector, radius);
 			} else if (Planet.prototype.isPrototypeOf(bodies[obj])) {
-				radius *= this.planet_resize;
-				radius = Math.max(radius, 5)
-				this.draw_at(this.planet_images[bodies[obj].img], vector, radius, radius);
+				this.draw_at("planet", bodies[obj].img, vector, radius, radius);
 			} else {
-				radius *= this.moon_resize;
-				radius = Math.max(radius, 2)
-				this.draw_at(this.moon_images[bodies[obj].img], vector, radius, radius);
+				this.draw_at("moon", bodies[obj].img, vector, radius, radius);
 			}
 		}
 		
@@ -104,21 +75,62 @@ var Viewer = function() {
 		var picture_size = 2000 / Math.pow(this.scale, 0.2);
 		for (var i = -10; i < 10; i++) {
 			for (var j = -10; j < 10; j++) {
-				var top_left = {};
-				top_left.x = i * picture_size + my_viewer .center.x / 10;
-				top_left.y = j * picture_size + my_viewer .center.y / 10;
+				var top_left = AstroMath.Vector.from_components(i, j).sc_mult(picture_size).add(my_viewer.center.sc_mult(0.1));
 				
-				ctx.drawImage(this.base_image, top_left.x, top_left.y, picture_size, picture_size);
+				ctx.drawImage(this.images["background"][0], top_left.x, top_left.y, picture_size, picture_size);
 			}
 		}
 	}
 	
+
+	
 	/**
 	 * The following function will draw a picture given center and radius.
 	 */
-	this.draw_at = function(image, vector, radius) {
-		ctx.drawImage(
-			image, vector.x - radius, vector.y - radius, 2 * radius, 2 * radius);
+	this.draw_at = function(object_type, skin_id, vector, radius) {
+		if (object_type == "star") {	
+			var skin_data = AstroMath.star_color_from_radius(radius * my_viewer .scale);
+			var skin_id = skin_data[0];
+			var progress_to_next = skin_data[1];
+			radius *= this.sun_resize;
+			var glow_radius = radius * 8 / 5;
+			var val1 = 1 - progress_to_next;
+			var val2 = progress_to_next;
+			
+			ctx.globalAlpha = val1;
+			ctx.drawImage(this.images.glow[skin_id],
+				vector.x - glow_radius, vector.y - glow_radius,
+				2 * glow_radius, 2 * glow_radius);
+				
+			if (progress_to_next != 0) {
+				ctx.globalAlpha = val2;
+				ctx.drawImage(this.images.glow[skin_id + 1],
+					vector.x - glow_radius, vector.y - glow_radius,
+					2 * glow_radius, 2 * glow_radius);
+			}
+				
+			ctx.globalAlpha = val1;
+			ctx.drawImage(this.images.star[skin_id],
+				vector.x - radius, vector.y - radius,
+				2 * radius, 2 * radius);
+			if (progress_to_next != 0) {
+				
+				ctx.globalAlpha = val2;
+				
+				ctx.drawImage(this.images.star[skin_id + 1],
+					vector.x - radius, vector.y - radius,
+					2 * radius, 2 * radius);
+			}
+			ctx.globalAlpha = 1;
+		} else if (object_type == "planet") {
+			radius *= this.planet_resize;
+			radius = Math.max(radius, 5);
+			ctx.drawImage(this.images[object_type][skin_id], vector.x - radius, vector.y - radius, 2 * radius, 2 * radius);
+		} else {
+			radius *= this.moon_resize;
+			radius = Math.max(radius, 2);
+			ctx.drawImage(this.images[object_type][skin_id], vector.x - radius, vector.y - radius, 2 * radius, 2 * radius);
+		}
 	}
 	
 	this.draw_from_time = function(t, vector, r) {
@@ -127,19 +139,78 @@ var Viewer = function() {
 		
 		if (t < 1) {
 			var rdm = Math.floor(r * 2);
-			radius *= this.moon_resize;
-			radius = Math.max(radius, 2)
-			this.draw_at(this.moon_images[rdm], vector, radius);
+			this.draw_at("moon", rdm, vector, radius);
 		} else if (t > 2) {
-			sun_color = AstroMath.sun_color_from_radius(radius * my_viewer .scale);
-			radius *= this.sun_resize;
-			this.draw_at(this.glow_images[sun_color], vector, radius * 8 / 5);
-			this.draw_at(this.sun_images[sun_color], vector, radius);
+			this.draw_at("star", -1, vector, radius);
 		} else {
 			var rdm = Math.floor(r * 5);
-			radius *= this.planet_resize;
-			radius = Math.max(radius, 5)
-			this.draw_at(this.planet_images[rdm], vector, radius);
+			this.draw_at("planet", rdm, vector, radius);
 		}
 	}
+	
+	/**
+	 * Adjusts viewer center and scale s.t. screen_vector will stay
+	 * consistent with plane_vector, but scale will change by
+	 * scaling_factor.
+	 */
+	this.zoom_at = function(screen_vector, direction) {
+		if (direction == "OUT") {
+			// First, we need the mouse position in coordinate
+			var mouse_coordinate = AstroMath.screen_to_coordinate_plane(screen_vector);
+			// Next, we need to measure the offset of that from the view center.
+			var mouse_offset = mouse_coordinate.subtract(this.center);
+			// Since we zoom out, the distance will become greater by the scaling factor.
+			var scaled_offset = mouse_offset.sc_mult(this.scaling_factor);
+			this.center = mouse_coordinate.subtract(scaled_offset);
+			this.scale *= this.scaling_factor;
+		} else {
+			// First, we need the mouse position in coordinate
+			var mouse_coordinate = AstroMath.screen_to_coordinate_plane(screen_vector);
+			// Next, we need to measure the offset of that from the view center.
+			var mouse_offset = mouse_coordinate.subtract(this.center);
+			// Since we zoom out, the distance will become greater by the scaling factor.
+			var scaled_offset = mouse_offset.sc_mult(1 / this.scaling_factor);
+			this.center = mouse_coordinate.subtract(scaled_offset);
+			this.scale /= this.scaling_factor;
+		}
+	}
+}
+
+get_images = function() {
+	var base_image = new Image();
+	base_image.src = 'graphics/space_bg.jpg';
+	
+	var sun_images = new Array(8);
+	for (var i = 0; i < 8; i++) {
+		sun_images[i] = new Image();
+		sun_images[i].src = 'graphics/star_' + (i + 1).toString() + '.png';
+	}
+	
+	var glow_images = new Array(8);
+	for (var i = 0; i < 8; i++) {
+		glow_images[i] = new Image();
+		glow_images[i].src = 'graphics/glow_' + (i + 1).toString() + '.png';
+	}
+	
+	var planet_images = new Array(5);
+	for (var i = 0; i < 5; i++) {
+		planet_images[i] = new Image();
+		planet_images[i].src = 'graphics/planet_' + (i + 1).toString() + '.png';
+	}
+	
+	var moon_images = new Array(2);
+	for (var i = 0; i < 2; i++) {
+		moon_images[i] = new Image();
+		moon_images[i].src = 'graphics/moon_' + (i + 1).toString() + '.png';
+	}
+	
+	var images = {};
+	
+	images["background"] = [base_image];
+	images["star"] = sun_images;
+	images["glow"] = glow_images;
+	images["planet"] = planet_images;
+	images["moon"] = moon_images;
+	
+	return images;
 }

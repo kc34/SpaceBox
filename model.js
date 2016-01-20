@@ -19,10 +19,6 @@ var Sector = function(){
 }
 
 Sector.prototype.addBody = function(position_vector, t, velocity_vector, r) { // Remind Kevin to edit values
-	var x = position_vector.x;
-	var y = position_vector.y;
-	var vx = this.k * velocity_vector.x;
-	var vy = this.k * velocity_vector.y;
 	if (t > 2)
 	{
 		var new_body = new Star(position_vector, velocity_vector, t); // Remind Kevin to put stars.
@@ -49,9 +45,6 @@ Sector.prototype.update = function(dt) {
 			if (this.bodies.length > 1) {
 				
 				var accel_vector = this.neighbor(this.bodies[idx]);
-				var x_accel = accel_vector.x;
-				var y_accel = accel_vector.y;
-				//console.log(x_accel, y_accel)
 				
 				this.bodies[idx].accelerate(accel_vector, dt);
 			}
@@ -176,26 +169,22 @@ AstroMath.distance = function(vectorA, vectorB) {
 	return distance;
 }
 	
-AstroMath.coordinate_plane_to_screen = function(vector) {
-	/*var new_vector = {
-		x : 1 / my_viewer .scale * (vector.x + my_viewer .center.x) + window.innerWidth / 2,
-		y : 1 / my_viewer .scale * (vector.y + my_viewer .center.y) + window.innerHeight / 2
-	}*/
-	return AstroMath.Vector.from_components(
-		1 / my_viewer.scale * (vector.x + my_viewer.center.x) + window.innerWidth / 2,
-		1 / my_viewer.scale * (vector.y + my_viewer.center.y) + window.innerHeight / 2
-	);
+AstroMath.coordinate_plane_to_screen = function(plane_vector) {
+	/**
+	 * ScreenVec = (PlaneVec - ViewCenter) / Scale + ScreenCenter
+	 */
+	var window_center = AstroMath.Vector.from_components(window.innerWidth / 2, window.innerHeight / 2);
+	var screen_vector = plane_vector.subtract(my_viewer.center).sc_mult(1 / my_viewer.scale).add(window_center);
+	return screen_vector;
 }
 
-AstroMath.screen_to_coordinate_plane = function(vector) {
-	var new_vector = {
-		x : my_viewer .scale * (vector.x - window.innerWidth / 2) - my_viewer .center.x,
-		y : my_viewer .scale * (vector.y - window.innerHeight / 2) - my_viewer .center.y
-	}
-	return AstroMath.Vector.from_components(
-		my_viewer .scale * (vector.x - window.innerWidth / 2) - my_viewer .center.x,
-		my_viewer .scale * (vector.y - window.innerHeight / 2) - my_viewer .center.y
-	);
+AstroMath.screen_to_coordinate_plane = function(screen_vector) {
+	/**
+	 * PlaneVec = (ScreenVec - ScreenCenter) * Scale + ViewCenter
+	 */
+	var window_center = AstroMath.Vector.from_components(window.innerWidth / 2, window.innerHeight / 2);
+	var plane_vector = screen_vector.subtract(window_center).sc_mult(my_viewer.scale).add(my_viewer.center);
+	return plane_vector;
 }
 
 AstroMath.time_to_radius = function(t) {
@@ -211,16 +200,17 @@ AstroMath.time_to_radius = function(t) {
 	}
 }
 
-AstroMath.sun_color_from_radius = function(radius) {
-	if (radius < AstroMath.time_to_radius(3.0)) {
-		return 7;
-	} else if (radius < AstroMath.time_to_radius(7)) {
-		var big_radius = AstroMath.time_to_radius(7);
-		var small_radius = AstroMath.time_to_radius(3);
+AstroMath.star_color_from_radius = function(radius) {
+	if (radius < AstroMath.time_to_radius(2.5)) {
+		return [7, 0];
+	} else if (radius < AstroMath.time_to_radius(15)) {
+		var big_radius = AstroMath.time_to_radius(15);
+		var small_radius = AstroMath.time_to_radius(2.5);
 		var color = Math.floor((big_radius - radius) / (big_radius - small_radius) * 7);
-		return color;
+		var progress_to_next = ((big_radius - radius) / (big_radius - small_radius) * 7) % 1
+		return [color, progress_to_next];
 	} else {
-		return 0;
+		return [0, 0];
 	}
 }
 
