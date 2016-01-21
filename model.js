@@ -19,6 +19,7 @@ var Sector = function(){
 }
 
 Sector.prototype.addBody = function(position_vector, t, velocity_vector, r) { // Remind Kevin to edit values
+	velocity_vector = velocity_vector.sc_mult(this.k);
 	if (t > 2)
 	{
 		var new_body = new Star(position_vector, velocity_vector, t); // Remind Kevin to put stars.
@@ -44,7 +45,7 @@ Sector.prototype.update = function(dt) {
 			
 			if (this.bodies.length > 1) {
 				
-				var accel_vector = this.neighbor(this.bodies[idx]);
+				var accel_vector = this.acceleration(this.bodies[idx]);
 				
 				this.bodies[idx].accelerate(accel_vector, dt);
 			}
@@ -54,9 +55,24 @@ Sector.prototype.update = function(dt) {
 	var score = 0;
 	for (var idx in this.bodies) {
 		if (Planet.prototype.isPrototypeOf(this.bodies[idx])) {
-			var velocity = this.bodies[idx].velocity_vector.norm();
-			if (velocity > 100) {
-				score += 10000 / Math.max(velocity, 1);
+			var neighbor = this.neighbor(this.bodies[idx]);
+			if (neighbor != null) {
+				var distance = AstroMath.distance(this.bodies[idx].position_vector, neighbor.position_vector);
+				this.bodies[idx].periapsis = Math.min(this.bodies[idx].periapsis, distance);
+				this.bodies[idx].apoapsis = Math.max(this.bodies[idx].apoapsis, distance);
+				var eccentricity = (this.bodies[idx].apoapsis - this.bodies[idx].periapsis) / (this.bodies[idx].apoapsis + this.bodies[idx].periapsis);
+				console.log(eccentricity);
+				if (this.bodies[idx].survival_time > 1 && eccentricity < 1) {
+					score += 100 * (1 - eccentricity);
+				}
+				/*
+				var velocity = this.bodies[idx].velocity_vector.norm();
+				var kinetic_energy = this.bodies[idx].mass * Math.pow(velocity, 2);
+				var potential_energy = AstroMath.distance(this.bodies[idx].position_vector, neighbor.position_vector) * 10000;
+				var total_energy = kinetic_energy + potential_energy;
+				score += 100000000000000 / total_energy;
+				*/
+				// Please please please rework !!!
 			}
 		}
 	}
@@ -142,24 +158,20 @@ Sector.prototype.neighbor = function(body) {
 		}
 		var n_idx = dist_array.indexOf(min_dist);
 		var best_neighbor = neighbor_array[n_idx];
-		return this.acceleration(body, best_neighbor);
+		return best_neighbor;
 	} else {
-		return AstroMath.Vector.ZERO;
+		return null;
 	}
 }
 
-// calculates the acceleration for body1 (body2 is unaffected by this acceleration)
-Sector.prototype.acceleration = function(body1, body2) {
-	var d = body2.get_vector().subtract(body1.get_vector());
-	var dist = d.norm();
-	if (dist == 0) {
-		return [0, 0];
+// Gets gravitational acceleration on body1 from body2.
+Sector.prototype.acceleration = function(body) {
+	var best_neighbor = this.neighbor(body);
+	if (best_neighbor != null) {
+		return AstroMath.get_acceleration(body, best_neighbor);
+	} else {
+		return AstroMath.Vector.ZERO;
 	}
-	var magnitude = body2.mass / Math.pow(dist, 2);
-	
-	var cos = d.x / dist;
-	var sin = d.y / dist;
-	return AstroMath.Vector.from_components(magnitude*cos, magnitude*sin);
 }
 
 var AstroMath = function() {};
@@ -167,6 +179,19 @@ var AstroMath = function() {};
 AstroMath.distance = function(vectorA, vectorB) {
 	var distance = Math.pow(Math.pow(vectorA.x - vectorB.x, 2) + Math.pow(vectorA.y - vectorB.y, 2), 0.5);
 	return distance;
+}
+
+AstroMath.get_acceleration = function(body_1, body_2) {
+	var d = body_2.get_vector().subtract(body_1.get_vector());
+	var dist = d.norm();
+	
+	if (dist == 0) {
+		return [0, 0];
+	}
+	var gravity = 1;
+	var magnitude = gravity * body_2.mass / Math.pow(dist, 2);
+	
+	return d.sc_mult(1 / dist).sc_mult(magnitude);
 }
 	
 AstroMath.coordinate_plane_to_screen = function(plane_vector) {
@@ -202,15 +227,14 @@ AstroMath.time_to_radius = function(t) {
 
 AstroMath.star_color_from_radius = function(radius) {
 	if (radius < AstroMath.time_to_radius(2.5)) {
-		return [7, 0];
+		return 7;
 	} else if (radius < AstroMath.time_to_radius(15)) {
 		var big_radius = AstroMath.time_to_radius(15);
 		var small_radius = AstroMath.time_to_radius(2.5);
-		var color = Math.floor((big_radius - radius) / (big_radius - small_radius) * 7);
-		var progress_to_next = ((big_radius - radius) / (big_radius - small_radius) * 7) % 1
-		return [color, progress_to_next];
+		var color = (big_radius - radius) / (big_radius - small_radius) * 7;
+		return color;
 	} else {
-		return [0, 0];
+		return 0;
 	}
 }
 

@@ -4,18 +4,19 @@ var Viewer = function() {
 	this.images = get_images();
 	
 	this.sun_resize = 4.0 / 3.0;
-	
 	this.planet_resize = 4.0 / 3.0
-	
 	this.moon_resize = 3.0 / 2.0;
 	
 	this.scaling_factor = 1.5;
 	
 	this.music = new Audio("one_sly_move.mp3");
 	this.music.play();
-		
-
+	
+	/**
+	 * This function will draw everything!
+	 */
     this.draw = function() {
+		
 		this.draw_background();
 		
 		var bodies = my_model.get_bodies();
@@ -23,20 +24,17 @@ var Viewer = function() {
 			var vector = AstroMath.coordinate_plane_to_screen(bodies[obj].get_vector());
 			var radius = bodies[obj].radius / this.scale;
 			if (Star.prototype.isPrototypeOf(bodies[obj])) {
-				var star_color = AstroMath.star_color_from_radius(radius * my_viewer .scale);
 				this.draw_at("star", -1, vector, radius);
 			} else if (Planet.prototype.isPrototypeOf(bodies[obj])) {
-				this.draw_at("planet", bodies[obj].img, vector, radius, radius);
+				this.draw_at("planet", bodies[obj].img, vector, radius);
 			} else {
-				this.draw_at("moon", bodies[obj].img, vector, radius, radius);
+				this.draw_at("moon", bodies[obj].img, vector, radius);
 			}
 		}
 		
 		// Time to draw a tentative star.
 		if (my_controller.mouse_state == "DOWN") {
 			// wait for time to be bigger than 0.25 seconds
-			var x = my_controller.mouse_location.x;
-			var y = my_controller.mouse_location.y;
 			var t = new Date();
 			t -= my_controller.mousedown_time;
 			t /= 1000;
@@ -44,14 +42,10 @@ var Viewer = function() {
 				this.draw_from_time(t, my_controller.mousedown_location, my_controller.rand);
 			}
 		} else if (my_controller.mouse_state == "MOVE") {
-			var x = my_controller.mousedown_location.x;
-			var y = my_controller.mousedown_location.y;
-			var new_x = my_controller.mouse_location.x;
-			var new_y = my_controller.mouse_location.y;
 			ctx.strokeStyle = "#FFFFFF";
 			ctx.beginPath();
-			ctx.moveTo(x, y);
-			ctx.lineTo(new_x, new_y);
+			ctx.moveTo(my_controller.mousedown_location.x, my_controller.mousedown_location.y);
+			ctx.lineTo(my_controller.mouse_location.x, my_controller.mouse_location.y);
 			ctx.stroke();
 			this.draw_from_time(my_controller.new_body_time, my_controller.mousedown_location, my_controller.rand);
 		}
@@ -60,6 +54,8 @@ var Viewer = function() {
 		ctx.font = "30px Courier New";
 		ctx.fillText("High Score: " + my_model.high_score.toString(), 10, 30);
 		ctx.fillText("Score: " + my_model.score.toString(), 10, 70);
+		ctx.font = "10px Courier New";
+		ctx.fillText("(Less eccentricity => Higher Score!)", 10, 100);
 		
 		// Draw the button that leads to the about page.
 		ctx.fillStyle = "#888888";
@@ -90,9 +86,10 @@ var Viewer = function() {
 	this.draw_at = function(object_type, skin_id, vector, radius) {
 		if (object_type == "star") {	
 			var skin_data = AstroMath.star_color_from_radius(radius * my_viewer .scale);
-			var skin_id = skin_data[0];
-			var progress_to_next = skin_data[1];
+			var skin_id = Math.floor(skin_data);
+			var progress_to_next = skin_data - skin_id;
 			radius *= this.sun_resize;
+			radius = Math.max(20, radius);
 			var glow_radius = radius * 8 / 5;
 			var val1 = 1 - progress_to_next;
 			var val2 = progress_to_next;
@@ -155,14 +152,16 @@ var Viewer = function() {
 	 */
 	this.zoom_at = function(screen_vector, direction) {
 		if (direction == "OUT") {
-			// First, we need the mouse position in coordinate
-			var mouse_coordinate = AstroMath.screen_to_coordinate_plane(screen_vector);
-			// Next, we need to measure the offset of that from the view center.
-			var mouse_offset = mouse_coordinate.subtract(this.center);
-			// Since we zoom out, the distance will become greater by the scaling factor.
-			var scaled_offset = mouse_offset.sc_mult(this.scaling_factor);
-			this.center = mouse_coordinate.subtract(scaled_offset);
-			this.scale *= this.scaling_factor;
+			if (this.scale < 10) {
+				// First, we need the mouse position in coordinate
+				var mouse_coordinate = AstroMath.screen_to_coordinate_plane(screen_vector);
+				// Next, we need to measure the offset of that from the view center.
+				var mouse_offset = mouse_coordinate.subtract(this.center);
+				// Since we zoom out, the distance will become greater by the scaling factor.
+				var scaled_offset = mouse_offset.sc_mult(this.scaling_factor);
+				this.center = mouse_coordinate.subtract(scaled_offset);
+				this.scale *= this.scaling_factor;
+			}
 		} else {
 			// First, we need the mouse position in coordinate
 			var mouse_coordinate = AstroMath.screen_to_coordinate_plane(screen_vector);

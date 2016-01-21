@@ -78,8 +78,6 @@ var Controller = function() {
 				}
 			} else if (this.mouse_state == "PAN" || (time_since_mouse_down <= 0.25 && dist > this.GROW_MOVE_STOP_DIST)) {
 				var coordinate_shift = AstroMath.screen_to_coordinate_plane(event).subtract(AstroMath.screen_to_coordinate_plane(this.mouse_location))
-				console.log(coordinate_shift);
-				//my_viewer.center = my_viewer.center.add(event.subtract(this.mouse_location).sc_mult(my_viewer.scale));
 				my_viewer.center = my_viewer.center.subtract(coordinate_shift);
 				this.mouse_state = "PAN";
 			}
