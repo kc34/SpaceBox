@@ -18,29 +18,16 @@ var Sector = function(){
 	this.k = 5;
 }
 
-Sector.prototype.addBody = function(position_vector, t, velocity_vector, r) { // Remind Kevin to edit values
-	velocity_vector = velocity_vector.sc_mult(this.k);
-	if (t > 2)
-	{
-		var new_body = new Star(position_vector, velocity_vector, t); // Remind Kevin to put stars.
-		this.bodies.push(new_body);
-		//this.stars.push(new_body)
-	}
-	else if (t < 1)
-	{
-		var new_body = new Moon(position_vector, velocity_vector, t, r);
-		this.bodies.push(new_body);
-	}
-	else
-	{
-		var new_body = new Planet(position_vector, velocity_vector, t, r);
-		this.bodies.push(new_body);
-		//this.planets.push(new_body);
-	}
+Sector.prototype.addBody = function(new_body) {
+	this.bodies.push(new_body);
 }
 Sector.prototype.update = function(dt) {
 	if (this.running) {
 		for (var idx in this.bodies) {
+			//var neighbor = this.neighbor(this.bodies[idx]);
+			//if (neighbor != null) {
+			//	this.bodies[idx].position_vector = this.bodies[idx].position_vector.add(neighbor.velocity_vector.sc_mult(dt));
+			//}
 			this.bodies[idx].move(dt);
 			
 			if (this.bodies.length > 1) {
@@ -61,18 +48,9 @@ Sector.prototype.update = function(dt) {
 				this.bodies[idx].periapsis = Math.min(this.bodies[idx].periapsis, distance);
 				this.bodies[idx].apoapsis = Math.max(this.bodies[idx].apoapsis, distance);
 				var eccentricity = (this.bodies[idx].apoapsis - this.bodies[idx].periapsis) / (this.bodies[idx].apoapsis + this.bodies[idx].periapsis);
-				console.log(eccentricity);
 				if (this.bodies[idx].survival_time > 1 && eccentricity < 1) {
 					score += 100 * (1 - eccentricity);
 				}
-				/*
-				var velocity = this.bodies[idx].velocity_vector.norm();
-				var kinetic_energy = this.bodies[idx].mass * Math.pow(velocity, 2);
-				var potential_energy = AstroMath.distance(this.bodies[idx].position_vector, neighbor.position_vector) * 10000;
-				var total_energy = kinetic_energy + potential_energy;
-				score += 100000000000000 / total_energy;
-				*/
-				// Please please please rework !!!
 			}
 		}
 	}

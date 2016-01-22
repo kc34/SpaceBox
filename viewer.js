@@ -10,7 +10,7 @@ var Viewer = function() {
 	this.scaling_factor = 1.5;
 	
 	this.music = new Audio("one_sly_move.mp3");
-	this.music.play();
+	//this.music.play();
 	
 	/**
 	 * This function will draw everything!
@@ -21,6 +21,7 @@ var Viewer = function() {
 		
 		var bodies = my_model.get_bodies();
 		for (var obj in bodies) {
+			/*
 			var vector = AstroMath.coordinate_plane_to_screen(bodies[obj].get_vector());
 			var radius = bodies[obj].radius / this.scale;
 			if (Star.prototype.isPrototypeOf(bodies[obj])) {
@@ -29,7 +30,8 @@ var Viewer = function() {
 				this.draw_at("planet", bodies[obj].img, vector, radius);
 			} else {
 				this.draw_at("moon", bodies[obj].img, vector, radius);
-			}
+			}*/
+			this.draw_object(bodies[obj]);
 		}
 		
 		// Time to draw a tentative star.
@@ -39,7 +41,9 @@ var Viewer = function() {
 			t -= my_controller.mousedown_time;
 			t /= 1000;
 			if (t > 0.25) {
-				this.draw_from_time(t, my_controller.mousedown_location, my_controller.rand);
+				var plane_vector = AstroMath.screen_to_coordinate_plane(my_controller.mousedown_location);
+				var ghost_object = Controller.createBody(plane_vector, AstroMath.Vector.ZERO, t, my_controller.rand);
+				this.draw_object(ghost_object);
 			}
 		} else if (my_controller.mouse_state == "MOVE") {
 			ctx.strokeStyle = "#FFFFFF";
@@ -47,7 +51,9 @@ var Viewer = function() {
 			ctx.moveTo(my_controller.mousedown_location.x, my_controller.mousedown_location.y);
 			ctx.lineTo(my_controller.mouse_location.x, my_controller.mouse_location.y);
 			ctx.stroke();
-			this.draw_from_time(my_controller.new_body_time, my_controller.mousedown_location, my_controller.rand);
+			var plane_vector = AstroMath.screen_to_coordinate_plane(my_controller.mousedown_location);
+			var ghost_object = Controller.createBody(plane_vector, AstroMath.Vector.ZERO, my_controller.new_body_time, my_controller.rand);
+			this.draw_object(ghost_object);
 		}
 		
 		ctx.fillStyle = "#FFFFFF";
@@ -71,29 +77,38 @@ var Viewer = function() {
 		var picture_size = 2000 / Math.pow(this.scale, 0.2);
 		for (var i = -10; i < 10; i++) {
 			for (var j = -10; j < 10; j++) {
-				var top_left = AstroMath.Vector.from_components(i, j).sc_mult(picture_size).add(my_viewer.center.sc_mult(0.1));
+				var top_left = AstroMath.Vector.from_components(i, j).sc_mult(picture_size).add(my_viewer.center.sc_mult(-0.1 / this.scale));
 				
 				ctx.drawImage(this.images["background"][0], top_left.x, top_left.y, picture_size, picture_size);
 			}
 		}
 	}
 	
-
-	
-	/**
-	 * The following function will draw a picture given center and radius.
-	 */
-	this.draw_at = function(object_type, skin_id, vector, radius) {
-		if (object_type == "star") {	
-			var skin_data = AstroMath.star_color_from_radius(radius * my_viewer .scale);
+	this.draw_object = function(my_object) {
+		
+		// First order of business: know where to draw.
+		var position_vector = my_object.position_vector;
+		var screen_vector = AstroMath.coordinate_plane_to_screen(position_vector);
+		
+		var screen_radius = my_object.radius / this.scale;
+		var object_type;
+		var skin_id;
+		
+		if (Star.prototype.isPrototypeOf(my_object)) {
+			screen_radius *= this.sun_resize;
+			screen_radius = Math.max(screen_radius, 20);
+			object_type = "star";
+			var skin_data = AstroMath.star_color_from_radius(my_object.radius);
 			var skin_id = Math.floor(skin_data);
 			var progress_to_next = skin_data - skin_id;
-			radius *= this.sun_resize;
-			radius = Math.max(20, radius);
-			var glow_radius = radius * 8 / 5;
 			var val1 = 1 - progress_to_next;
 			var val2 = progress_to_next;
+			var vector = screen_vector;
 			
+			var radius = screen_radius;
+			var glow_radius = radius * 8 / 5
+			
+			// Draw next.
 			ctx.globalAlpha = val1;
 			ctx.drawImage(this.images.glow[skin_id],
 				vector.x - glow_radius, vector.y - glow_radius,
@@ -105,7 +120,7 @@ var Viewer = function() {
 					vector.x - glow_radius, vector.y - glow_radius,
 					2 * glow_radius, 2 * glow_radius);
 			}
-				
+			// Draw actual.
 			ctx.globalAlpha = val1;
 			ctx.drawImage(this.images.star[skin_id],
 				vector.x - radius, vector.y - radius,
@@ -119,29 +134,25 @@ var Viewer = function() {
 					2 * radius, 2 * radius);
 			}
 			ctx.globalAlpha = 1;
-		} else if (object_type == "planet") {
-			radius *= this.planet_resize;
-			radius = Math.max(radius, 5);
-			ctx.drawImage(this.images[object_type][skin_id], vector.x - radius, vector.y - radius, 2 * radius, 2 * radius);
-		} else {
-			radius *= this.moon_resize;
-			radius = Math.max(radius, 2);
-			ctx.drawImage(this.images[object_type][skin_id], vector.x - radius, vector.y - radius, 2 * radius, 2 * radius);
-		}
-	}
-	
-	this.draw_from_time = function(t, vector, r) {
-		var radius = AstroMath.time_to_radius(t);
-		radius /= this.scale;
-		
-		if (t < 1) {
-			var rdm = Math.floor(r * 2);
-			this.draw_at("moon", rdm, vector, radius);
-		} else if (t > 2) {
-			this.draw_at("star", -1, vector, radius);
-		} else {
-			var rdm = Math.floor(r * 5);
-			this.draw_at("planet", rdm, vector, radius);
+			
+		} else if (Planet.prototype.isPrototypeOf(my_object)) {
+			screen_radius *= this.planet_resize;
+			screen_radius = Math.max(screen_radius, 5);
+			object_type = "planet";
+			var skin_id = my_object.img;
+			ctx.drawImage(this.images[object_type][skin_id],
+				screen_vector.x - screen_radius,
+				screen_vector.y - screen_radius,
+				2 * screen_radius, 2 * screen_radius);
+		} else if (Moon.prototype.isPrototypeOf(my_object)) {
+			screen_radius *= this.moon_resize;
+			screen_radius = Math.max(screen_radius, 2);
+			object_type = "moon";
+			var skin_id = my_object.img;
+			ctx.drawImage(this.images[object_type][skin_id],
+				screen_vector.x - screen_radius,
+				screen_vector.y - screen_radius,
+				2 * screen_radius, 2 * screen_radius);
 		}
 	}
 	

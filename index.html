@@ -50,7 +50,8 @@ var accumulator = 0.0;
 var current_time = new Date();
 
 /**
- * Main loop. Runs physics and renderer separately.
+ * Runs physics-model and rendering separately, but on same thread.
+ *
  */
 function main() {
 	
