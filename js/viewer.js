@@ -1,13 +1,13 @@
 var Viewer = function() {
-	this.center = AstroMath.Vector.from_components(0, 0);
+	this.center = AstroMath.Vector.fromComponents(0, 0);
 	this.scale = 1;
-	this.images = get_images();
+	this.images = getImages();
 	
-	this.sun_resize = 4.0 / 3.0;
-	this.planet_resize = 4.0 / 3.0
-	this.moon_resize = 3.0 / 2.0;
+	this.sunResize = 4.0 / 3.0;
+	this.planetResize = 4.0 / 3.0
+	this.moonResize = 3.0 / 2.0;
 	
-	this.scaling_factor = 1.5;
+	this.scalingFactor = 1.5;
 	
 	this.music = new Audio("assets/one_sly_move.mp3");
 	this.music.play();
@@ -17,45 +17,36 @@ var Viewer = function() {
 	 */
     this.draw = function() {
 		
-		this.draw_background();
+		this.drawBackground();
 		
-		/*
-		 * The following is equivalent to:
-		 * 
-		 *  var bodies = my_model.get_bodies();
-		 *	for (var id in bodies) {
-		 *		this.draw_object(bodies[id]);
-		 * 	}
-		 */
-		
-		my_model.get_bodies().map(this.draw_object, this); 
+		myModel.getBodies().forEach(this.drawObject, this); 
 		
 		// Time to draw a tentative star.
-		if (my_controller.mouse_state == "DOWN") {
+		if (myController.mouseState == "DOWN") {
 			// wait for time to be bigger than 0.25 seconds
 			var t = new Date();
-			t -= my_controller.mousedown_time;
+			t -= myController.mousedownTime;
 			t /= 1000;
 			if (t > 0.25) {
-				var plane_vector = AstroMath.screen_to_coordinate_plane(my_controller.mousedown_location);
-				var ghost_object = Controller.createBody(plane_vector, AstroMath.Vector.ZERO, t, my_controller.rand);
-				this.draw_object(ghost_object);
+				var planeVector = AstroMath.screenToCoordinatePlane(myController.mousedownLocation);
+				var ghostObject = Controller.createBody(planeVector, AstroMath.Vector.ZERO, t, myController.rand);
+				this.drawObject(ghostObject);
 			}
-		} else if (my_controller.mouse_state == "MOVE") {
+		} else if (myController.mouseState == "MOVE") {
 			ctx.strokeStyle = "#FFFFFF";
 			ctx.beginPath();
-			ctx.moveTo(my_controller.mousedown_location.x, my_controller.mousedown_location.y);
-			ctx.lineTo(my_controller.mouse_location.x, my_controller.mouse_location.y);
+			ctx.moveTo(myController.mousedownLocation.x, myController.mousedownLocation.y);
+			ctx.lineTo(myController.mouseLocation.x, myController.mouseLocation.y);
 			ctx.stroke();
-			var plane_vector = AstroMath.screen_to_coordinate_plane(my_controller.mousedown_location);
-			var ghost_object = Controller.createBody(plane_vector, AstroMath.Vector.ZERO, my_controller.new_body_time, my_controller.rand);
-			this.draw_object(ghost_object);
+			var planeVector = AstroMath.screenToCoordinatePlane(myController.mousedownLocation);
+			var ghostObject = Controller.createBody(planeVector, AstroMath.Vector.ZERO, myController.newBodyTime, myController.rand);
+			this.drawObject(ghostObject);
 		}
 		
 		ctx.fillStyle = "#FFFFFF";
 		ctx.font = "30px Courier New";
-		ctx.fillText("High Score: " + my_model.high_score.toString(), 10, 30);
-		ctx.fillText("Score: " + my_model.score.toString(), 10, 70);
+		ctx.fillText("High Score: " + myModel.highScore.toString(), 10, 30);
+		ctx.fillText("Score: " + myModel.score.toString(), 10, 70);
 		ctx.font = "10px Courier New";
 		ctx.fillText("(Less eccentricity => Higher Score!)", 10, 100);
 		
@@ -69,115 +60,115 @@ var Viewer = function() {
 		ctx.fillText("?", 14, window.innerHeight - 13.75); 
     }
     
-    this.draw_background = function() {
-		var picture_size = 2000 / Math.pow(this.scale, 0.2);
+    this.drawBackground = function() {
+		var pictureSize = 2000 / Math.pow(this.scale, 0.2);
 		for (var i = -10; i < 10; i++) {
 			for (var j = -10; j < 10; j++) {
-				var top_left = AstroMath.Vector.from_components(i, j).sc_mult(picture_size).add(my_viewer.center.sc_mult(-0.1 / this.scale));
+				var topLeft = AstroMath.Vector.fromComponents(i, j).scMult(pictureSize).add(myViewer.center.scMult(-0.1 / this.scale));
 				
-				ctx.drawImage(this.images["background"][0], top_left.x, top_left.y, picture_size, picture_size);
+				ctx.drawImage(this.images["background"][0], topLeft.x, topLeft.y, pictureSize, pictureSize);
 			}
 		}
 	}
 	
-	this.draw_object = function(my_object) {
+	this.drawObject = function(myObject) {
 		
 		// First order of business: know where to draw.
-		var position_vector = my_object.position_vector;
-		var screen_vector = AstroMath.coordinate_plane_to_screen(position_vector);
+		var positionVector = myObject.positionVector;
+		var screenVector = AstroMath.coordinatePlaneToScreen(positionVector);
 		
-		var screen_radius = my_object.radius / this.scale;
-		var object_type;
-		var skin_id;
+		var screenRadius = myObject.radius / this.scale;
+		var objectType;
+		var skinId;
 		
-		if (Star.prototype.isPrototypeOf(my_object)) {
-			screen_radius *= this.sun_resize;
-			screen_radius = Math.max(screen_radius, 20);
-			object_type = "star";
-			var skin_data = AstroMath.star_color_from_radius(my_object.radius);
-			var skin_id = Math.floor(skin_data);
-			var progress_to_next = skin_data - skin_id;
-			var val1 = 1 - progress_to_next;
-			var val2 = progress_to_next;
-			var vector = screen_vector;
+		if (Star.prototype.isPrototypeOf(myObject)) {
+			screenRadius *= this.sunResize;
+			screenRadius = Math.max(screenRadius, 20);
+			objectType = "star";
+			var skinData = AstroMath.starColorFromRadius(myObject.radius);
+			var skinId = Math.floor(skinData);
+			var progressToNext = skinData - skinId;
+			var val1 = 1 - progressToNext;
+			var val2 = progressToNext;
+			var vector = screenVector;
 			
-			var radius = screen_radius;
-			var glow_radius = radius * 8 / 5
+			var radius = screenRadius;
+			var glowRadius = radius * 8 / 5
 			
 			// Draw next.
 			ctx.globalAlpha = val1;
-			ctx.drawImage(this.images.glow[skin_id],
-				vector.x - glow_radius, vector.y - glow_radius,
-				2 * glow_radius, 2 * glow_radius);
+			ctx.drawImage(this.images.glow[skinId],
+				vector.x - glowRadius, vector.y - glowRadius,
+				2 * glowRadius, 2 * glowRadius);
 				
-			if (progress_to_next != 0) {
+			if (progressToNext != 0) {
 				ctx.globalAlpha = val2;
-				ctx.drawImage(this.images.glow[skin_id + 1],
-					vector.x - glow_radius, vector.y - glow_radius,
-					2 * glow_radius, 2 * glow_radius);
+				ctx.drawImage(this.images.glow[skinId + 1],
+					vector.x - glowRadius, vector.y - glowRadius,
+					2 * glowRadius, 2 * glowRadius);
 			}
 			// Draw actual.
 			ctx.globalAlpha = val1;
-			ctx.drawImage(this.images.star[skin_id],
+			ctx.drawImage(this.images.star[skinId],
 				vector.x - radius, vector.y - radius,
 				2 * radius, 2 * radius);
-			if (progress_to_next != 0) {
+			if (progressToNext != 0) {
 				
 				ctx.globalAlpha = val2;
 				
-				ctx.drawImage(this.images.star[skin_id + 1],
+				ctx.drawImage(this.images.star[skinId + 1],
 					vector.x - radius, vector.y - radius,
 					2 * radius, 2 * radius);
 			}
 			ctx.globalAlpha = 1;
 			
-		} else if (Planet.prototype.isPrototypeOf(my_object)) {
-			screen_radius *= this.planet_resize;
-			screen_radius = Math.max(screen_radius, 5);
-			object_type = "planet";
-			var skin_id = my_object.img;
-			ctx.drawImage(this.images[object_type][skin_id],
-				screen_vector.x - screen_radius,
-				screen_vector.y - screen_radius,
-				2 * screen_radius, 2 * screen_radius);
-		} else if (Moon.prototype.isPrototypeOf(my_object)) {
-			screen_radius *= this.moon_resize;
-			screen_radius = Math.max(screen_radius, 2);
-			object_type = "moon";
-			var skin_id = my_object.img;
-			ctx.drawImage(this.images[object_type][skin_id],
-				screen_vector.x - screen_radius,
-				screen_vector.y - screen_radius,
-				2 * screen_radius, 2 * screen_radius);
+		} else if (Planet.prototype.isPrototypeOf(myObject)) {
+			screenRadius *= this.planetResize;
+			screenRadius = Math.max(screenRadius, 5);
+			objectType = "planet";
+			var skinId = myObject.img;
+			ctx.drawImage(this.images[objectType][skinId],
+				screenVector.x - screenRadius,
+				screenVector.y - screenRadius,
+				2 * screenRadius, 2 * screenRadius);
+		} else if (Moon.prototype.isPrototypeOf(myObject)) {
+			screenRadius *= this.moonResize;
+			screenRadius = Math.max(screenRadius, 2);
+			objectType = "moon";
+			var skinId = myObject.img;
+			ctx.drawImage(this.images[objectType][skinId],
+				screenVector.x - screenRadius,
+				screenVector.y - screenRadius,
+				2 * screenRadius, 2 * screenRadius);
 		}
 	}
 	
 	/**
-	 * Adjusts viewer center and scale s.t. screen_vector will stay
-	 * consistent with plane_vector, but scale will change by
-	 * scaling_factor.
+	 * Adjusts viewer center and scale s.t. screenVector will stay
+	 * consistent with planeVector, but scale will change by
+	 * scalingFactor.
 	 */
-	this.zoom_at = function(screen_vector, direction) {
+	this.zoomAt = function(screenVector, direction) {
 		if (direction == "OUT") {
 			if (this.scale < 10) {
 				// First, we need the mouse position in coordinate
-				var mouse_coordinate = AstroMath.screen_to_coordinate_plane(screen_vector);
+				var mouseCoordinate = AstroMath.screenToCoordinatePlane(screenVector);
 				// Next, we need to measure the offset of that from the view center.
-				var mouse_offset = mouse_coordinate.subtract(this.center);
+				var mouseOffset = mouseCoordinate.subtract(this.center);
 				// Since we zoom out, the distance will become greater by the scaling factor.
-				var scaled_offset = mouse_offset.sc_mult(this.scaling_factor);
-				this.center = mouse_coordinate.subtract(scaled_offset);
-				this.scale *= this.scaling_factor;
+				var scaledOffset = mouseOffset.scMult(this.scalingFactor);
+				this.center = mouseCoordinate.subtract(scaledOffset);
+				this.scale *= this.scalingFactor;
 			}
 		} else {
 			// First, we need the mouse position in coordinate
-			var mouse_coordinate = AstroMath.screen_to_coordinate_plane(screen_vector);
+			var mouseCoordinate = AstroMath.screenToCoordinatePlane(screenVector);
 			// Next, we need to measure the offset of that from the view center.
-			var mouse_offset = mouse_coordinate.subtract(this.center);
+			var mouseOffset = mouseCoordinate.subtract(this.center);
 			// Since we zoom out, the distance will become greater by the scaling factor.
-			var scaled_offset = mouse_offset.sc_mult(1 / this.scaling_factor);
-			this.center = mouse_coordinate.subtract(scaled_offset);
-			this.scale /= this.scaling_factor;
+			var scaledOffset = mouseOffset.scMult(1 / this.scalingFactor);
+			this.center = mouseCoordinate.subtract(scaledOffset);
+			this.scale /= this.scalingFactor;
 		}
 	}
 }

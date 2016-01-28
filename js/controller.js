@@ -1,33 +1,33 @@
 
 var Controller = function() { 
 	this.name = "I am a controller." // Placeholder name.
-	this.mouse_state = null;
-	this.mousedown_time = null;
-	this.mousedown_location = null;
-	this.mouse_location = null;
-	this.last_mouse_location = null;
+	this.mouseState = null;
+	this.mousedownTime = null;
+	this.mousedownLocation = null;
+	this.mouseLocation = null;
+	this.lastMouseLocation = null;
 	this.GROW_MOVE_STOP_DIST = 10;
-	this.new_body_time = null;
+	this.newBodyTime = null;
 	this.rand = null;
-	this.ghost_object = null;
+	this.ghostObject = null;
 	
-	this.key_to_function_map = {
-		"&" : function() { my_viewer.scale /= 1.5; },
-		"(" : function() { my_viewer.scale = (my_viewer.scale > 10) ? my_viewer.scale : my_viewer.scale * 1.5; },
-		" " : function() { my_model.running = !(my_model.running); },
-		"W" : function() { my_viewer.center.y += my_viewer.scale * 100; },
-		"S" : function() { my_viewer.center.y -= my_viewer.scale * 100; },
-		"A" : function() { my_viewer.center.x -= my_viewer.scale * 100; },
-		"D" : function() { my_viewer.center.x += my_viewer.scale * 100; }
+	this.keyToFunctionMap = {
+		"&" : function() { myViewer.scale /= 1.5; },
+		"(" : function() { myViewer.scale = (myViewer.scale > 10) ? myViewer.scale : myViewer.scale * 1.5; },
+		" " : function() { myModel.running = !(myModel.running); },
+		"W" : function() { myViewer.center.y += myViewer.scale * 100; },
+		"S" : function() { myViewer.center.y -= myViewer.scale * 100; },
+		"A" : function() { myViewer.center.x -= myViewer.scale * 100; },
+		"D" : function() { myViewer.center.x += myViewer.scale * 100; }
 	}
     
-    this.keydown_handler = function(key_event) {
-		var keynum = window.event ? key_event.keyCode : key_event.which; // window.event = userIsIE
+    this.keydownHandler = function(keyEvent) {
+		var keynum = window.event ? keyEvent.keyCode : keyEvent.which; // window.event = userIsIE
 		var key = String.fromCharCode(keynum);
-		this.key_to_function_map[key]();
+		this.keyToFunctionMap[key]();
     }
     
-    this.click_handler = function(event) {
+    this.clickHandler = function(event) {
 		event = new AstroMath.Vector(event);
 		if (event.x < 10 + 20 && event.x > 10) {
 			if (event.y < window.innerHeight - 10 && event.y > window.innerHeight - 10 - 20) {
@@ -36,79 +36,79 @@ var Controller = function() {
 		}
 	}
     
-	this.mousedown_handler = function(event) {
+	this.mousedownHandler = function(event) {
 		event = new AstroMath.Vector(event);
-		this.mouse_state = "DOWN";
-		this.mousedown_time = new Date();
+		this.mouseState = "DOWN";
+		this.mousedownTime = new Date();
 		
-		this.mousedown_location = event;
-		this.mouse_location = event;
+		this.mousedownLocation = event;
+		this.mouseLocation = event;
 		
 		this.rand = Math.random();
 	}
 	
-	this.mouseup_handler = function(event) {
+	this.mouseupHandler = function(event) {
 		event = new AstroMath.Vector(event);
-		if (this.mouse_state == "DOWN") {
-			this.new_body_time = (new Date() - this.mousedown_time) / 1000;
-			var vector = AstroMath.screen_to_coordinate_plane(event);
-			var new_body = Controller.createBody(vector, AstroMath.Vector.ZERO, this.new_body_time, this.rand);
-			my_model.addBody(new_body);
-		} else if (this.mouse_state == "MOVE") {
-			var pos_vector_1 = AstroMath.screen_to_coordinate_plane(this.mousedown_location);
-			var pos_vector_2 = AstroMath.screen_to_coordinate_plane(event);
-			var delta_vector = pos_vector_2.subtract(pos_vector_1);
-			var new_body = Controller.createBody(pos_vector_1, delta_vector, this.new_body_time, this.rand);
-			my_model.addBody(new_body);
+		if (this.mouseState == "DOWN") {
+			this.newBodyTime = (new Date() - this.mousedownTime) / 1000;
+			var vector = AstroMath.screenToCoordinatePlane(event);
+			var newBody = Controller.createBody(vector, AstroMath.Vector.ZERO, this.newBodyTime, this.rand);
+			myModel.addBody(newBody);
+		} else if (this.mouseState == "MOVE") {
+			var posVector_1 = AstroMath.screenToCoordinatePlane(this.mousedownLocation);
+			var posVector_2 = AstroMath.screenToCoordinatePlane(event);
+			var deltaVector = posVector_2.subtract(posVector_1);
+			var newBody = Controller.createBody(posVector_1, deltaVector, this.newBodyTime, this.rand);
+			myModel.addBody(newBody);
 			
 		}
-		this.mouse_state = "UP";
+		this.mouseState = "UP";
 		
 	}
 	
-	this.mousemove_handler = function(event) {
+	this.mousemoveHandler = function(event) {
 		event = new AstroMath.Vector(event);
-		var time_since_mouse_down = (new Date() - this.mousedown_time) / 1000;
+		var timeSinceMouseDown = (new Date() - this.mousedownTime) / 1000;
 		
-		if (this.mouse_state == "DOWN" || this.mouse_state == "PAN") {
-			var mouse_delta = event.subtract(this.mousedown_location);
-			var dist = mouse_delta.norm();
-			if (time_since_mouse_down > 0.25 && this.mouse_state != "PAN") {
+		if (this.mouseState == "DOWN" || this.mouseState == "PAN") {
+			var mouseDelta = event.subtract(this.mousedownLocation);
+			var dist = mouseDelta.norm();
+			if (timeSinceMouseDown > 0.25 && this.mouseState != "PAN") {
 				if (dist > this.GROW_MOVE_STOP_DIST) {
-					this.mouse_state = "MOVE";
-					this.new_body_time = (new Date() - this.mousedown_time) / 1000;
+					this.mouseState = "MOVE";
+					this.newBodyTime = (new Date() - this.mousedownTime) / 1000;
 				}
-			} else if (this.mouse_state == "PAN" || (time_since_mouse_down <= 0.25 && dist > this.GROW_MOVE_STOP_DIST)) {
-				var coordinate_shift = AstroMath.screen_to_coordinate_plane(event).subtract(AstroMath.screen_to_coordinate_plane(this.mouse_location))
-				my_viewer.center = my_viewer.center.subtract(coordinate_shift);
-				this.mouse_state = "PAN";
+			} else if (this.mouseState == "PAN" || (timeSinceMouseDown <= 0.25 && dist > this.GROW_MOVE_STOP_DIST)) {
+				var coordinateShift = AstroMath.screenToCoordinatePlane(event).subtract(AstroMath.screenToCoordinatePlane(this.mouseLocation))
+				myViewer.center = myViewer.center.subtract(coordinateShift);
+				this.mouseState = "PAN";
 			}
 		}
-		this.mouse_location = event;
+		this.mouseLocation = event;
 	}
 	
-	this.mousewheel_handler = function(event) {
+	this.mousewheelHandler = function(event) {
 		if (event.wheelDelta > 0) {
-			my_viewer.zoom_at(new AstroMath.Vector(event), "IN");
+			myViewer.zoomAt(new AstroMath.Vector(event), "IN");
 		} else {
-			my_viewer.zoom_at(new AstroMath.Vector(event), "OUT");
+			myViewer.zoomAt(new AstroMath.Vector(event), "OUT");
 		}
 	}
 }
 
-Controller.createBody = function(position_vector, velocity_vector, t, r) { // Remind Kevin to edit values
-	velocity_vector = velocity_vector.sc_mult(5);
+Controller.createBody = function(positionVector, velocityVector, t, r) { // Remind Kevin to edit values
+	velocityVector = velocityVector.scMult(5);
 	if (t > 2)
 	{
-		var new_body = new Star(position_vector, velocity_vector, t); // Remind Kevin to put stars.
+		var newBody = new Star(positionVector, velocityVector, t); // Remind Kevin to put stars.
 	}
 	else if (t < 1)
 	{
-		var new_body = new Moon(position_vector, velocity_vector, t, r);
+		var newBody = new Moon(positionVector, velocityVector, t, r);
 	}
 	else
 	{
-		var new_body = new Planet(position_vector, velocity_vector, t, r);
+		var newBody = new Planet(positionVector, velocityVector, t, r);
 	}
-	return new_body;
+	return newBody;
 }

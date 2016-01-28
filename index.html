@@ -42,18 +42,18 @@ html, body {
  *  - Star changes color more gradually.
  */
 
-var my_controller = new Controller();
-var my_viewer = new Viewer();
-var my_model =  new Sector();
+var myController = new Controller();
+var myViewer = new Viewer();
+var myModel =  new Sector();
 
 /**
  * Other important global variables (e.g. time-keeping, environment)
  */
 
 var TIME_STEP = 1.0 / 60; // Time-step. Measured in seconds.
-var total_elapsed_time = 0.0;
+var totalElapsedTime = 0.0;
 var accumulator = 0.0;
-var current_time = new Date();
+var currentTime = new Date();
 
 /**
  * Runs physics-model and rendering separately, but on same thread.
@@ -61,28 +61,28 @@ var current_time = new Date();
  */
 function main() {
 	
-	new_time = new Date();
-    frame_time = (new_time - current_time) / 1000;
+	newTime = new Date();
+    frameTime = (newTime - currentTime) / 1000;
 	
-    if ( frame_time > 0.1 )
-        frame_time = 0.1;
-    current_time = new_time;
+    if ( frameTime > 0.1 )
+        frameTime = 0.1;
+    currentTime = newTime;
 
-    accumulator += frame_time;
+    accumulator += frameTime;
     while ( accumulator >= TIME_STEP )
     {
-        my_model.update(TIME_STEP);
-        total_elapsed_time += TIME_STEP;
+        myModel.update(TIME_STEP);
+        totalElapsedTime += TIME_STEP;
         accumulator -= TIME_STEP;
     }
     
-	my_viewer.draw();
+	myViewer.draw();
 }
 
 // Borrowed from http://stackoverflow.com/questions/1846599
-function keydown_handler(key) {
+function keydownHandler(key) {
 	event = new AstroMath.Vector(event);
-	my_controller.keydown_handler(key);
+	myController.keydownHandler(key);
 }
 
 var canvas = document.getElementById("myCanvas");
@@ -90,23 +90,23 @@ canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
 canvas.addEventListener('click', function(event) {
-	my_controller["click_handler"](event);
+	myController["clickHandler"](event);
 }, false);
 
 canvas.addEventListener('mousedown', function(event) {
-	my_controller["mousedown_handler"](event);
+	myController["mousedownHandler"](event);
 }, false);
 
 canvas.addEventListener('mouseup', function(event) {
-	my_controller["mouseup_handler"](event);
+	myController["mouseupHandler"](event);
 }, false);
 
 canvas.addEventListener('mousemove', function(event) {
-	my_controller["mousemove_handler"](event);
+	myController["mousemoveHandler"](event);
 }, false);
 
 canvas.addEventListener('mousewheel', function(event) {
-	my_controller["mousewheel_handler"](event);
+	myController["mousewheelHandler"](event);
 }, false);
 
 canvas.onmousedown = function(){return false;};
@@ -114,7 +114,7 @@ canvas.onmousedown = function(){return false;};
 
 ctx = canvas.getContext("2d");
 
-window.addEventListener('keydown', keydown_handler, false);
+window.addEventListener('keydown', keydownHandler, false);
 
 var mainLooper = setInterval(main, TIME_STEP);
 
