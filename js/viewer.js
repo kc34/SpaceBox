@@ -9,7 +9,7 @@ var Viewer = function() {
 	
 	this.scaling_factor = 1.5;
 	
-	this.music = new Audio("one_sly_move.mp3");
+	this.music = new Audio("assets/one_sly_move.mp3");
 	this.music.play();
 	
 	/**
@@ -182,41 +182,4 @@ var Viewer = function() {
 	}
 }
 
-get_images = function() {
-	var base_image = new Image();
-	base_image.src = 'graphics/space_bg.jpg';
-	
-	var sun_images = new Array(8);
-	for (var i = 0; i < 8; i++) {
-		sun_images[i] = new Image();
-		sun_images[i].src = 'graphics/star_' + (i + 1).toString() + '.png';
-	}
-	
-	var glow_images = new Array(8);
-	for (var i = 0; i < 8; i++) {
-		glow_images[i] = new Image();
-		glow_images[i].src = 'graphics/glow_' + (i + 1).toString() + '.png';
-	}
-	
-	var planet_images = new Array(5);
-	for (var i = 0; i < 5; i++) {
-		planet_images[i] = new Image();
-		planet_images[i].src = 'graphics/planet_' + (i + 1).toString() + '.png';
-	}
-	
-	var moon_images = new Array(2);
-	for (var i = 0; i < 2; i++) {
-		moon_images[i] = new Image();
-		moon_images[i].src = 'graphics/moon_' + (i + 1).toString() + '.png';
-	}
-	
-	var images = {};
-	
-	images["background"] = [base_image];
-	images["star"] = sun_images;
-	images["glow"] = glow_images;
-	images["planet"] = planet_images;
-	images["moon"] = moon_images;
-	
-	return images;
-}
+

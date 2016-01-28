@@ -31,7 +31,7 @@ var Controller = function() {
 		event = new AstroMath.Vector(event);
 		if (event.x < 10 + 20 && event.x > 10) {
 			if (event.y < window.innerHeight - 10 && event.y > window.innerHeight - 10 - 20) {
-				window.location = "about.html";
+				window.location = "html/about.html";
 			}
 		}
 	}

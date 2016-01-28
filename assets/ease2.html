@@ -28,11 +28,9 @@ canvas {
                                     window.msRequestAnimationFrame;
                                              
         var iteration = 0;
-        var totalIterations = 50;
+        var totalIterations = 80;
         var easingValue;
-        
-        var grow = true;
-        
+                
         function drawCircle() {         
             mainContext.clearRect(0, 0, canvasWidth, canvasHeight);
              
@@ -42,28 +40,24 @@ canvas {
              
             // draw the image
             mainContext.glow_image = new Image();
-        	mainContext.glow_image.src = 'graphics/glow_1.png';
+        	mainContext.glow_image.src = 'bodies/glow_1.png';
             mainContext.sun_image = new Image();
-        	mainContext.sun_image.src = 'graphics/star_1.png';
+        	mainContext.sun_image.src = 'bodies/star_1.png';
         	            
-			if (grow) {
-				easingValue = easeInQuad(iteration, 400, 15, totalIterations);
-			} else {
-				easingValue = easeOutQuad(iteration, 415, -15, totalIterations);
-			}            
+			easingValue = easeOutBack(iteration, 100, 400, totalIterations);
 			
             mainContext.drawImage(mainContext.glow_image,
 				225 - easingValue/2, 225 - easingValue/2,
 				easingValue, easingValue)
 			mainContext.drawImage(mainContext.sun_image,
-				225 - 125, 225 - 125,
-				250, 250)
+				225 - easingValue * 5/16, 225 - easingValue * 5/16,
+				easingValue * 5/8, easingValue * 5/8)
             
             if (iteration < totalIterations) {
     			iteration++;
 			} else {
-				iteration = 0;
-				grow = !grow
+				iteration = 0
+			//	grow = !grow
 			}
             
             requestAnimationFrame(drawCircle);
