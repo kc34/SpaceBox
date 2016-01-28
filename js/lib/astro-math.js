@@ -12,7 +12,7 @@ AstroMath.getAcceleration = function(body_1, body_2) {
 	if (dist == 0) {
 		return [0, 0];
 	}
-	var gravity = 1;
+	var gravity = 1 / 5;
 	var magnitude = gravity * body_2.mass / Math.pow(dist, 2);
 	
 	return d.scMult(1 / dist).scMult(magnitude);

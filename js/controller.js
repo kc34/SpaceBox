@@ -97,7 +97,7 @@ var Controller = function() {
 }
 
 Controller.createBody = function(positionVector, velocityVector, t, r) { // Remind Kevin to edit values
-	velocityVector = velocityVector.scMult(5);
+	velocityVector = velocityVector.scMult(2);
 	if (t > 2)
 	{
 		var newBody = new Star(positionVector, velocityVector, t); // Remind Kevin to put stars.
