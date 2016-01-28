@@ -10,7 +10,7 @@ var Viewer = function() {
 	this.scaling_factor = 1.5;
 	
 	this.music = new Audio("one_sly_move.mp3");
-	//this.music.play();
+	this.music.play();
 	
 	/**
 	 * This function will draw everything!
@@ -19,20 +19,16 @@ var Viewer = function() {
 		
 		this.draw_background();
 		
-		var bodies = my_model.get_bodies();
-		for (var obj in bodies) {
-			/*
-			var vector = AstroMath.coordinate_plane_to_screen(bodies[obj].get_vector());
-			var radius = bodies[obj].radius / this.scale;
-			if (Star.prototype.isPrototypeOf(bodies[obj])) {
-				this.draw_at("star", -1, vector, radius);
-			} else if (Planet.prototype.isPrototypeOf(bodies[obj])) {
-				this.draw_at("planet", bodies[obj].img, vector, radius);
-			} else {
-				this.draw_at("moon", bodies[obj].img, vector, radius);
-			}*/
-			this.draw_object(bodies[obj]);
-		}
+		/*
+		 * The following is equivalent to:
+		 * 
+		 *  var bodies = my_model.get_bodies();
+		 *	for (var id in bodies) {
+		 *		this.draw_object(bodies[id]);
+		 * 	}
+		 */
+		
+		my_model.get_bodies().map(this.draw_object, this); 
 		
 		// Time to draw a tentative star.
 		if (my_controller.mouse_state == "DOWN") {

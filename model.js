@@ -106,7 +106,7 @@ Sector.prototype.neighbor = function(body) {
 	
 	if (Moon.prototype.isPrototypeOf(body)) {
 		for (var idx in this.bodies) {
-			if (Planet.prototype.isPrototypeOf(this.bodies[idx])) {
+			if (Planet.prototype.isPrototypeOf(this.bodies[idx]) || Star.prototype.isPrototypeOf(this.bodies[idx])) {
 				orbitables.push(this.bodies[idx]);
 			}
 		}
