@@ -1,5 +1,5 @@
-
-var Controller = function() { 
+var Controller = function() {
+	
 	this.name = "I am a controller." // Placeholder name.
 	this.mouseState = null;
 	this.mousedownTime = null;
@@ -28,7 +28,7 @@ var Controller = function() {
     }
     
     this.clickHandler = function(event) {
-		event = new AstroMath.Vector(event);
+		event = new Vector(event);
 		if (event.x < 10 + 20 && event.x > 10) {
 			if (event.y < window.innerHeight - 10 && event.y > window.innerHeight - 10 - 20) {
 				window.location = "html/about.html";
@@ -37,7 +37,7 @@ var Controller = function() {
 	}
     
 	this.mousedownHandler = function(event) {
-		event = new AstroMath.Vector(event);
+		event = new Vector(event);
 		this.mouseState = "DOWN";
 		this.mousedownTime = new Date();
 		
@@ -48,15 +48,15 @@ var Controller = function() {
 	}
 	
 	this.mouseupHandler = function(event) {
-		event = new AstroMath.Vector(event);
+		event = new Vector(event);
 		if (this.mouseState == "DOWN") {
 			this.newBodyTime = (new Date() - this.mousedownTime) / 1000;
-			var vector = AstroMath.screenToCoordinatePlane(event);
-			var newBody = Controller.createBody(vector, AstroMath.Vector.ZERO, this.newBodyTime, this.rand);
+			var vector = Viewer.screenToCoordinatePlane(event);
+			var newBody = Controller.createBody(vector, Vector.ZERO, this.newBodyTime, this.rand);
 			myModel.addBody(newBody);
 		} else if (this.mouseState == "MOVE") {
-			var posVector_1 = AstroMath.screenToCoordinatePlane(this.mousedownLocation);
-			var posVector_2 = AstroMath.screenToCoordinatePlane(event);
+			var posVector_1 = Viewer.screenToCoordinatePlane(this.mousedownLocation);
+			var posVector_2 = Viewer.screenToCoordinatePlane(event);
 			var deltaVector = posVector_2.subtract(posVector_1);
 			var newBody = Controller.createBody(posVector_1, deltaVector, this.newBodyTime, this.rand);
 			myModel.addBody(newBody);
@@ -67,7 +67,7 @@ var Controller = function() {
 	}
 	
 	this.mousemoveHandler = function(event) {
-		event = new AstroMath.Vector(event);
+		event = new Vector(event);
 		var timeSinceMouseDown = (new Date() - this.mousedownTime) / 1000;
 		
 		if (this.mouseState == "DOWN" || this.mouseState == "PAN") {
@@ -79,7 +79,7 @@ var Controller = function() {
 					this.newBodyTime = (new Date() - this.mousedownTime) / 1000;
 				}
 			} else if (this.mouseState == "PAN" || (timeSinceMouseDown <= 0.25 && dist > this.GROW_MOVE_STOP_DIST)) {
-				var coordinateShift = AstroMath.screenToCoordinatePlane(event).subtract(AstroMath.screenToCoordinatePlane(this.mouseLocation))
+				var coordinateShift = Viewer.screenToCoordinatePlane(event).subtract(Viewer.screenToCoordinatePlane(this.mouseLocation))
 				myViewer.center = myViewer.center.subtract(coordinateShift);
 				this.mouseState = "PAN";
 			}
@@ -89,26 +89,66 @@ var Controller = function() {
 	
 	this.mousewheelHandler = function(event) {
 		if (event.wheelDelta > 0) {
-			myViewer.zoomAt(new AstroMath.Vector(event), "IN");
+			myViewer.zoomAt(new Vector(event), "IN");
 		} else {
-			myViewer.zoomAt(new AstroMath.Vector(event), "OUT");
+			myViewer.zoomAt(new Vector(event), "OUT");
+		}
+	}
+	
+	this.getGhostBody = function() {
+		// Time to draw a tentative star.
+		if (this.mouseState == "DOWN") {
+			// wait for time to be bigger than 0.25 seconds
+			var t = new Date();
+			t -= this.mousedownTime;
+			t /= 1000;
+			if (t > 0.25) {
+				var planeVector = Viewer.screenToCoordinatePlane(this.mousedownLocation);
+				var ghostObject = Controller.createBody(planeVector, Vector.ZERO, t, this.rand);
+				return ghostObject;
+			}
+		} else if (myController.mouseState == "MOVE") {
+			ctx.strokeStyle = "#FFFFFF";
+			ctx.beginPath();
+			ctx.moveTo(this.mousedownLocation.x, this.mousedownLocation.y);
+			ctx.lineTo(this.mouseLocation.x, this.mouseLocation.y);
+			ctx.stroke();
+			var planeVector = Viewer.screenToCoordinatePlane(this.mousedownLocation);
+			var ghostObject = Controller.createBody(planeVector, Vector.ZERO, this.newBodyTime, this.rand);
+			return ghostObject;
+		} else {
+			return null;
 		}
 	}
 }
 
-Controller.createBody = function(positionVector, velocityVector, t, r) { // Remind Kevin to edit values
+Controller.timeToRadius = function(t) {
+	if (t < 1) {
+		return 2 * t + 2;
+	} else if (t < 2) {
+		return 10 * t;
+	} else if (t < 2.5) {
+		var myIteration = (t - 2) / (2.5 - 2) * 30;
+		return easeOutBack(myIteration, 20, 105, 30);
+	} else {
+		return 50 * t;
+	}
+}
+
+Controller.createBody = function(positionVector, velocityVector, t, rand) { // Remind Kevin to edit values
 	velocityVector = velocityVector.scMult(2);
+	var radius = Controller.timeToRadius(t);
 	if (t > 2)
 	{
-		var newBody = new Star(positionVector, velocityVector, t); // Remind Kevin to put stars.
+		var newBody = new Star(positionVector, velocityVector, radius); // Remind Kevin to put stars.
 	}
 	else if (t < 1)
 	{
-		var newBody = new Moon(positionVector, velocityVector, t, r);
+		var newBody = new Moon(positionVector, velocityVector, radius, rand);
 	}
 	else
 	{
-		var newBody = new Planet(positionVector, velocityVector, t, r);
+		var newBody = new Planet(positionVector, velocityVector, radius, rand);
 	}
 	return newBody;
 }

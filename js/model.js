@@ -40,7 +40,7 @@ Sector.prototype.update = function(dt) {
 		if (Planet.prototype.isPrototypeOf(this.bodies[idx])) {
 			var neighbor = this.neighbor(this.bodies[idx]);
 			if (neighbor != null) {
-				var distance = AstroMath.distance(this.bodies[idx].positionVector, neighbor.positionVector);
+				var distance = Vector.distance(this.bodies[idx].positionVector, neighbor.positionVector);
 				this.bodies[idx].periapsis = Math.min(this.bodies[idx].periapsis, distance);
 				this.bodies[idx].apoapsis = Math.max(this.bodies[idx].apoapsis, distance);
 				var eccentricity = (this.bodies[idx].apoapsis - this.bodies[idx].periapsis) / (this.bodies[idx].apoapsis + this.bodies[idx].periapsis);
@@ -64,7 +64,7 @@ Sector.prototype.collisionUpdate = function(){
 	for (var idx = 0; idx < this.bodies.length - 1; idx++) {
 		for (var idx2 = idx + 1; idx2 < this.bodies.length; idx2++) {
 			if (idx != idx2) {
-				var tDist = AstroMath.distance(this.bodies[idx].getVector(), this.bodies[idx2].getVector());
+				var tDist = Vector.distance(this.bodies[idx].getVector(), this.bodies[idx2].getVector());
 				var requiredSpace = this.bodies[idx].radius + this.bodies[idx2].radius;
 				if (requiredSpace > tDist){
 					console.log("COLLISION DETECTED", requiredSpace, tDist)
@@ -114,7 +114,7 @@ Sector.prototype.neighbor = function(body) {
 	
 	if (orbitables.length != 0) {
 		for (var idx in orbitables) {
-			var dist = AstroMath.distance(body.getVector(), orbitables[idx].getVector());
+			var dist = Vector.distance(body.getVector(), orbitables[idx].getVector());
 			if (dist != 0){
 				distArray.push(dist);
 				neighborArray.push(orbitables[idx]);
@@ -139,10 +139,23 @@ Sector.prototype.neighbor = function(body) {
 Sector.prototype.acceleration = function(body) {
 	var bestNeighbor = this.neighbor(body);
 	if (bestNeighbor != null) {
-		return AstroMath.getAcceleration(body, bestNeighbor);
+		return Sector.getAcceleration(body, bestNeighbor);
 	} else {
-		return AstroMath.Vector.ZERO;
+		return Vector.ZERO;
 	}
+}
+
+Sector.getAcceleration = function(body_1, body_2) {
+	var d = body_2.getVector().subtract(body_1.getVector());
+	var dist = d.norm();
+	
+	if (dist == 0) {
+		return [0, 0];
+	}
+	var gravity = 1 / 5;
+	var magnitude = gravity * body_2.mass / Math.pow(dist, 2);
+	
+	return d.scMult(1 / dist).scMult(magnitude);
 }
 
 

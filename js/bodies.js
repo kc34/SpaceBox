@@ -1,8 +1,8 @@
-var Body = function(positionVector, velocityVector, t) {
+var Body = function(positionVector, velocityVector, radius) {
 	this.type = 'Generic space body';
 	this.positionVector = positionVector;
-	this.radius = AstroMath.timeToRadius(t);
 	this.velocityVector = velocityVector;
+	this.radius = radius;
 	this.survivalTime = 0;
 	this.periapsis = Math.pow(10, 10);
 	this.apoapsis = Math.pow(10, -10);
@@ -22,7 +22,7 @@ Body.PLANET_DENSITY = 500;
 Body.MOON_DENSITY = 300;
 
 var Star = function(positionVector, velocityVector, t) {
-	Body.call(this, positionVector, AstroMath.Vector.ZERO, t);
+	Body.call(this, positionVector, Vector.ZERO, t);
 	this.type = 'Star';
 	this.mass = Body.STAR_DENSITY * Math.pow(this.radius, 3);
 }

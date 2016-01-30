@@ -23,23 +23,19 @@ html, body {
 <script src="js/viewer.js"></script>
 <script src="js/controller.js"></script>
 <script src="js/bodies.js"></script>
-<script src="js/lib/astro-math.js"></script>
+<script src="js/lib/vector.js"></script>
 <script src="assets/easing.js"></script>
 <script src="assets/graphics.js"></script>
 
 <script>
 	
 /**
- * Changelog:
- *  - Renamed View to Viewer.
- *  - Moved AstroMath from viewer.js to model.js.
- *  - Adding vectors and vector methods to AstroMath.
- *  - Removed rounded from ease-function calls.
- *  - Vector implementation. AstroMath now has teeth!
- *  - Viewer background size reduction decreased.
- *     - This raises the cap on the zoom out limit!
- *  - Space body minimum size on draw fixed.
- *  - Star changes color more gradually.
+ * 	Changelog:
+ *  	Moved a bunch of shit around.
+ */
+
+/**
+ * 	Begin by creating our favorite singletons.
  */
 
 var myController = new Controller();
@@ -47,7 +43,7 @@ var myViewer = new Viewer();
 var myModel =  new Sector();
 
 /**
- * Other important global variables (e.g. time-keeping, environment)
+ * 	Other important global variables (e.g. time-keeping, environment)
  */
 
 var TIME_STEP = 1.0 / 60; // Time-step. Measured in seconds.
@@ -56,8 +52,7 @@ var accumulator = 0.0;
 var currentTime = new Date();
 
 /**
- * Runs physics-model and rendering separately, but on same thread.
- *
+ * 	Runs physics-model and rendering separately, but on same thread.
  */
 function main() {
 	
@@ -79,42 +74,43 @@ function main() {
 	myViewer.draw();
 }
 
-// Borrowed from http://stackoverflow.com/questions/1846599
-function keydownHandler(key) {
-	event = new AstroMath.Vector(event);
-	myController.keydownHandler(key);
-}
-
 var canvas = document.getElementById("myCanvas");
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
+/** Event: Mousedown followed by mouseup. */
 canvas.addEventListener('click', function(event) {
 	myController["clickHandler"](event);
 }, false);
 
+/** Event: Left mousebutton press on the canvas. */
 canvas.addEventListener('mousedown', function(event) {
 	myController["mousedownHandler"](event);
 }, false);
 
+/** Event: Left mousebutton release on the canvas. */
 canvas.addEventListener('mouseup', function(event) {
 	myController["mouseupHandler"](event);
 }, false);
 
+/** Event: Any movement of the mouse over the canvas. */
 canvas.addEventListener('mousemove', function(event) {
 	myController["mousemoveHandler"](event);
 }, false);
 
+/** Event: Movement of the mousewheel. */
 canvas.addEventListener('mousewheel', function(event) {
 	myController["mousewheelHandler"](event);
 }, false);
 
-canvas.onmousedown = function(){return false;};
-
+canvas.onmousedown = function(){ return false; };
 
 ctx = canvas.getContext("2d");
 
-window.addEventListener('keydown', keydownHandler, false);
+/** Event: Any key press. */
+window.addEventListener('keydown', function(key) {
+	myController.keydownHandler(key);
+}, false);
 
 var mainLooper = setInterval(main, TIME_STEP);
 

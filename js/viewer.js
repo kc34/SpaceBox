@@ -1,5 +1,5 @@
 var Viewer = function() {
-	this.center = AstroMath.Vector.fromComponents(0, 0);
+	this.center = Vector.fromComponents(0, 0);
 	this.scale = 1;
 	this.images = getImages();
 	
@@ -21,26 +21,8 @@ var Viewer = function() {
 		
 		myModel.getBodies().forEach(this.drawObject, this); 
 		
-		// Time to draw a tentative star.
-		if (myController.mouseState == "DOWN") {
-			// wait for time to be bigger than 0.25 seconds
-			var t = new Date();
-			t -= myController.mousedownTime;
-			t /= 1000;
-			if (t > 0.25) {
-				var planeVector = AstroMath.screenToCoordinatePlane(myController.mousedownLocation);
-				var ghostObject = Controller.createBody(planeVector, AstroMath.Vector.ZERO, t, myController.rand);
-				this.drawObject(ghostObject);
-			}
-		} else if (myController.mouseState == "MOVE") {
-			ctx.strokeStyle = "#FFFFFF";
-			ctx.beginPath();
-			ctx.moveTo(myController.mousedownLocation.x, myController.mousedownLocation.y);
-			ctx.lineTo(myController.mouseLocation.x, myController.mouseLocation.y);
-			ctx.stroke();
-			var planeVector = AstroMath.screenToCoordinatePlane(myController.mousedownLocation);
-			var ghostObject = Controller.createBody(planeVector, AstroMath.Vector.ZERO, myController.newBodyTime, myController.rand);
-			this.drawObject(ghostObject);
+		if (myController.getGhostBody() != null) {
+			this.drawObject(myController.getGhostBody());
 		}
 		
 		ctx.fillStyle = "#FFFFFF";
@@ -64,7 +46,7 @@ var Viewer = function() {
 		var pictureSize = 2000 / Math.pow(this.scale, 0.2);
 		for (var i = -10; i < 10; i++) {
 			for (var j = -10; j < 10; j++) {
-				var topLeft = AstroMath.Vector.fromComponents(i, j).scMult(pictureSize).add(myViewer.center.scMult(-0.1 / this.scale));
+				var topLeft = Vector.fromComponents(i, j).scMult(pictureSize).add(myViewer.center.scMult(-0.1 / this.scale));
 				
 				ctx.drawImage(this.images["background"][0], topLeft.x, topLeft.y, pictureSize, pictureSize);
 			}
@@ -75,7 +57,7 @@ var Viewer = function() {
 		
 		// First order of business: know where to draw.
 		var positionVector = myObject.positionVector;
-		var screenVector = AstroMath.coordinatePlaneToScreen(positionVector);
+		var screenVector = Viewer.coordinatePlaneToScreen(positionVector);
 		
 		var screenRadius = myObject.radius / this.scale;
 		var objectType;
@@ -85,7 +67,7 @@ var Viewer = function() {
 			screenRadius *= this.sunResize;
 			screenRadius = Math.max(screenRadius, 20);
 			objectType = "star";
-			var skinData = AstroMath.starColorFromRadius(myObject.radius);
+			var skinData = Viewer.starColorFromRadius(myObject.radius);
 			var skinId = Math.floor(skinData);
 			var progressToNext = skinData - skinId;
 			var val1 = 1 - progressToNext;
@@ -152,7 +134,7 @@ var Viewer = function() {
 		if (direction == "OUT") {
 			if (this.scale < 10) {
 				// First, we need the mouse position in coordinate
-				var mouseCoordinate = AstroMath.screenToCoordinatePlane(screenVector);
+				var mouseCoordinate = Viewer.screenToCoordinatePlane(screenVector);
 				// Next, we need to measure the offset of that from the view center.
 				var mouseOffset = mouseCoordinate.subtract(this.center);
 				// Since we zoom out, the distance will become greater by the scaling factor.
@@ -162,7 +144,7 @@ var Viewer = function() {
 			}
 		} else {
 			// First, we need the mouse position in coordinate
-			var mouseCoordinate = AstroMath.screenToCoordinatePlane(screenVector);
+			var mouseCoordinate = Viewer.screenToCoordinatePlane(screenVector);
 			// Next, we need to measure the offset of that from the view center.
 			var mouseOffset = mouseCoordinate.subtract(this.center);
 			// Since we zoom out, the distance will become greater by the scaling factor.
@@ -170,6 +152,37 @@ var Viewer = function() {
 			this.center = mouseCoordinate.subtract(scaledOffset);
 			this.scale /= this.scalingFactor;
 		}
+	}
+}
+
+Viewer.coordinatePlaneToScreen = function(planeVector) {
+	/**
+	 * ScreenVec = (PlaneVec - ViewCenter) / Scale + ScreenCenter
+	 */
+	var windowCenter = Vector.fromComponents(window.innerWidth / 2, window.innerHeight / 2);
+	var screenVector = planeVector.subtract(myViewer.center).scMult(1 / myViewer.scale).add(windowCenter);
+	return screenVector;
+}
+
+Viewer.screenToCoordinatePlane = function(screenVector) {
+	/**
+	 * PlaneVec = (ScreenVec - ScreenCenter) * Scale + ViewCenter
+	 */
+	var windowCenter = Vector.fromComponents(window.innerWidth / 2, window.innerHeight / 2);
+	var planeVector = screenVector.subtract(windowCenter).scMult(myViewer.scale).add(myViewer.center);
+	return planeVector;
+}
+
+Viewer.starColorFromRadius = function(radius) {
+	if (radius < Controller.timeToRadius(2.5)) {
+		return 7;
+	} else if (radius < Controller.timeToRadius(15)) {
+		var bigRadius = Controller.timeToRadius(15);
+		var smallRadius = Controller.timeToRadius(2.5);
+		var color = (bigRadius - radius) / (bigRadius - smallRadius) * 7;
+		return color;
+	} else {
+		return 0;
 	}
 }
 
