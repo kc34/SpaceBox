@@ -28,7 +28,7 @@ html, body {
 <script src="assets/graphics.js"></script>
 
 <script>
-	
+
 /**
  * 	Changelog:
  *  	Moved a bunch of shit around.
@@ -55,10 +55,10 @@ var currentTime = new Date();
  * 	Runs physics-model and rendering separately, but on same thread.
  */
 function main() {
-	
+
 	newTime = new Date();
     frameTime = (newTime - currentTime) / 1000;
-	
+
     if ( frameTime > 0.1 )
         frameTime = 0.1;
     currentTime = newTime;
@@ -70,7 +70,7 @@ function main() {
         totalElapsedTime += TIME_STEP;
         accumulator -= TIME_STEP;
     }
-    
+
 	myViewer.draw();
 }
 
@@ -80,27 +80,34 @@ canvas.height = window.innerHeight;
 
 /** Event: Mousedown followed by mouseup. */
 canvas.addEventListener('click', function(event) {
-	myController["clickHandler"](event);
+	myController["clickHandler"]({x : event.clientX, y : event.clientY});
 }, false);
 
 /** Event: Left mousebutton press on the canvas. */
 canvas.addEventListener('mousedown', function(event) {
-	myController["mousedownHandler"](event);
+	myController["mousedownHandler"]({x : event.clientX, y : event.clientY});
 }, false);
 
 /** Event: Left mousebutton release on the canvas. */
 canvas.addEventListener('mouseup', function(event) {
-	myController["mouseupHandler"](event);
+	myController["mouseupHandler"]({x : event.clientX, y : event.clientY});
 }, false);
 
 /** Event: Any movement of the mouse over the canvas. */
 canvas.addEventListener('mousemove', function(event) {
-	myController["mousemoveHandler"](event);
+	myController["mousemoveHandler"]({x : event.clientX, y : event.clientY});
 }, false);
 
 /** Event: Movement of the mousewheel. */
 canvas.addEventListener('mousewheel', function(event) {
+  console.log(event);
 	myController["mousewheelHandler"](event);
+}, false);
+
+/** Firefox mousewheel */
+canvas.addEventListener("DOMMouseScroll", function(event) {
+  console.log(event);
+	myController["mousewheelHandler"]({clientX : event.clientX, clientY : event.clientY, wheelDelta : event.detail * -1});
 }, false);
 
 canvas.onmousedown = function(){ return false; };
@@ -118,4 +125,3 @@ var mainLooper = setInterval(main, TIME_STEP);
 
 </body>
 </html>
-
