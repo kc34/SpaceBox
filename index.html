@@ -19,8 +19,10 @@ html, body {
 }
 </style>
 
+<script src="js/view/panel.js"></script>
+<script src="js/view/view.js"></script>
 <script src="js/model/model.js"></script>
-<script src="js/view/viewer.js"></script>
+<script src="js/view/gameview.js"></script>
 <script src="js/model/bodies.js"></script>
 <script src="js/util/vector.js"></script>
 <script src="assets/easing.js"></script>
@@ -42,8 +44,9 @@ var myViewer;
 var myModel;
 
 function init() {
-  myViewer = new Viewer();
   myModel = new Sector();
+  //myViewer = new GameView(myModel);
+	myViewer = new View(myModel);
 };
 
 /**

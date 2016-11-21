@@ -1,5 +1,7 @@
 "use strict";
-var Viewer = function() {
+var GameView = function(model) {
+	this.model = model;
+	Panel.call(this, 0, 0, window.innerWidth, window.innerHeight);
 	this.center = Vector.fromComponents(0, 0);
 	this.scale = 1;
 	this.images = getImages();
@@ -13,7 +15,7 @@ var Viewer = function() {
 	this.music = new Audio("assets/one_sly_move.mp3");
 	this.music.play();
 
-	this.name = "I am a Viewer." // Placeholder name.
+	this.name = "I am a GameView." // Placeholder name.
 	this.mouseState = null;
 	this.mousedownTime = null;
 	this.mousedownLocation = null;
@@ -27,7 +29,7 @@ var Viewer = function() {
 	/**
 	 * This function will draw everything!
 	 */
-	this.draw = function() {
+	this.drawPanel = function() {
 
 		this.drawBackground();
 
@@ -44,22 +46,13 @@ var Viewer = function() {
 		ctx.font = "10px Courier New";
 		ctx.fillText("(Less eccentricity => Higher Score!)", 10, 100);
 
-		// Draw the button that leads to the about page.
-		ctx.fillStyle = "#888888";
-		ctx.fillRect( 10, window.innerHeight - 10 - 20, 20, 20);
-		ctx.strokeStyle = "#AAAAAA";
-		ctx.strokeRect( 10, window.innerHeight - 10 - 20, 20, 20);
-		ctx.fillStyle = "#FFFFFF";
-		ctx.font = "20px Arial";
-		ctx.fillText("?", 14, window.innerHeight - 13.75);
-    }
+  }
 
-    this.drawBackground = function() {
+  this.drawBackground = function() {
 		var pictureSize = 2000 / Math.pow(this.scale, 0.2);
 		for (var i = -10; i < 10; i++) {
 			for (var j = -10; j < 10; j++) {
 				var topLeft = Vector.fromComponents(i, j).scMult(pictureSize).add(this.center.scMult(-0.1 / this.scale));
-
 				ctx.drawImage(this.images["background"][0], topLeft.x, topLeft.y, pictureSize, pictureSize);
 			}
 		}
@@ -69,7 +62,7 @@ var Viewer = function() {
 
 		// First order of business: know where to draw.
 		var positionVector = myObject.positionVector;
-		var screenVector = Viewer.coordinatePlaneToScreen(positionVector);
+		var screenVector = this.coordinatePlaneToScreen(positionVector);
 
 		var screenRadius = myObject.radius / this.scale;
 		var objectType;
@@ -79,7 +72,7 @@ var Viewer = function() {
 			screenRadius *= this.sunResize;
 			screenRadius = Math.max(screenRadius, 20);
 			objectType = "star";
-			var skinData = Viewer.starColorFromRadius(myObject.radius);
+			var skinData = GameView.starColorFromRadius(myObject.radius);
 			var skinId = Math.floor(skinData);
 			var progressToNext = skinData - skinId;
 			var val1 = 1 - progressToNext;
@@ -138,7 +131,7 @@ var Viewer = function() {
 	}
 
 	/**
-	 * Adjusts viewer center and scale s.t. screenVector will stay
+	 * Adjusts GameView center and scale s.t. screenVector will stay
 	 * consistent with planeVector, but scale will change by
 	 * scalingFactor.
 	 */
@@ -146,7 +139,7 @@ var Viewer = function() {
 		if (direction == "OUT") {
 			if (this.scale < 10) {
 				// First, we need the mouse position in coordinate
-				var mouseCoordinate = Viewer.screenToCoordinatePlane(screenVector);
+				var mouseCoordinate = this.screenToCoordinatePlane(screenVector);
 				// Next, we need to measure the offset of that from the view center.
 				var mouseOffset = mouseCoordinate.subtract(this.center);
 				// Since we zoom out, the distance will become greater by the scaling factor.
@@ -156,7 +149,7 @@ var Viewer = function() {
 			}
 		} else {
 			// First, we need the mouse position in coordinate
-			var mouseCoordinate = Viewer.screenToCoordinatePlane(screenVector);
+			var mouseCoordinate = this.screenToCoordinatePlane(screenVector);
 			// Next, we need to measure the offset of that from the view center.
 			var mouseOffset = mouseCoordinate.subtract(this.center);
 			// Since we zoom out, the distance will become greater by the scaling factor.
@@ -167,28 +160,23 @@ var Viewer = function() {
 	}
 
 	this.keyToFunctionMap = {
-		"&" : function() { myViewer.scale /= 1.5; },
-		"(" : function() { myViewer.scale = (myViewer.scale > 10) ? myViewer.scale : myViewer.scale * 1.5; },
-		" " : function() { myModel.running = !(myModel.running); },
-		"W" : function() { myViewer.center.y += myViewer.scale * 100; },
-		"S" : function() { myViewer.center.y -= myViewer.scale * 100; },
-		"A" : function() { myViewer.center.x -= myViewer.scale * 100; },
-		"D" : function() { myViewer.center.x += myViewer.scale * 100; }
+		"&" : function(gameView) { gameView.scale /= 1.5; },
+		"(" : function(gameView) { gameView.scale = (gameView.scale > 10) ? gameView.scale : gameView.scale * 1.5; },
+		" " : function(gameView) { gameView.model.running = !(gameView.model.running); },
+		"S" : function(gameView) { gameView.center.y -= gameView.scale * 100; },
+		"W" : function(gameView) { gameView.center.y += gameView.scale * 100; },
+		"A" : function(gameView) { gameView.center.x -= gameView.scale * 100; },
+		"D" : function(gameView) { gameView.center.x += gameView.scale * 100; }
 	}
 
-    this.keydownHandler = function(keyEvent) {
+  this.keydownHandler = function(keyEvent) {
 		var keynum = window.event ? keyEvent.keyCode : keyEvent.which; // window.event = userIsIE
 		var key = String.fromCharCode(keynum);
-		this.keyToFunctionMap[key]();
-    }
+		this.keyToFunctionMap[key](this);
+  }
 
-    this.clickHandler = function(event) {
-		event = new Vector(event);
-		if (event.x < 10 + 20 && event.x > 10) {
-			if (event.y < window.innerHeight - 10 && event.y > window.innerHeight - 10 - 20) {
-				window.location = "html/about.html";
-			}
-		}
+  this.clickHandler = function(event) {
+		// Used to be a link to the about page!
 	}
 
 	this.mousedownHandler = function(event) {
@@ -206,14 +194,14 @@ var Viewer = function() {
 		event = new Vector(event);
 		if (this.mouseState == "DOWN") {
 			this.newBodyTime = (new Date() - this.mousedownTime) / 1000;
-			var vector = Viewer.screenToCoordinatePlane(event);
-			var newBody = Viewer.createBody(vector, Vector.ZERO, this.newBodyTime, this.rand);
+			var vector = this.screenToCoordinatePlane(event);
+			var newBody = GameView.createBody(vector, Vector.ZERO, this.newBodyTime, this.rand);
 			myModel.addBody(newBody);
 		} else if (this.mouseState == "MOVE") {
-			var posVector_1 = Viewer.screenToCoordinatePlane(this.mousedownLocation);
-			var posVector_2 = Viewer.screenToCoordinatePlane(event);
+			var posVector_1 = this.screenToCoordinatePlane(this.mousedownLocation);
+			var posVector_2 = this.screenToCoordinatePlane(event);
 			var deltaVector = posVector_2.subtract(posVector_1);
-			var newBody = Viewer.createBody(posVector_1, deltaVector, this.newBodyTime, this.rand);
+			var newBody = GameView.createBody(posVector_1, deltaVector, this.newBodyTime, this.rand);
 			myModel.addBody(newBody);
 
 		}
@@ -234,7 +222,7 @@ var Viewer = function() {
 					this.newBodyTime = (new Date() - this.mousedownTime) / 1000;
 				}
 			} else if (this.mouseState == "PAN" || (timeSinceMouseDown <= 0.25 && dist > this.GROW_MOVE_STOP_DIST)) {
-				var coordinateShift = Viewer.screenToCoordinatePlane(event).subtract(Viewer.screenToCoordinatePlane(this.mouseLocation))
+				var coordinateShift = this.screenToCoordinatePlane(event).subtract(this.screenToCoordinatePlane(this.mouseLocation))
 				this.center = this.center.subtract(coordinateShift);
 				this.mouseState = "PAN";
 			}
@@ -258,8 +246,8 @@ var Viewer = function() {
 			t -= this.mousedownTime;
 			t /= 1000;
 			if (t > 0.25) {
-				var planeVector = Viewer.screenToCoordinatePlane(this.mousedownLocation);
-				var ghostObject = Viewer.createBody(planeVector, Vector.ZERO, t, this.rand);
+				var planeVector = this.screenToCoordinatePlane(this.mousedownLocation);
+				var ghostObject = GameView.createBody(planeVector, Vector.ZERO, t, this.rand);
 				return ghostObject;
 			}
 		} else if (this.mouseState == "MOVE") {
@@ -268,8 +256,8 @@ var Viewer = function() {
 			ctx.moveTo(this.mousedownLocation.x, this.mousedownLocation.y);
 			ctx.lineTo(this.mouseLocation.x, this.mouseLocation.y);
 			ctx.stroke();
-			var planeVector = Viewer.screenToCoordinatePlane(this.mousedownLocation);
-			var ghostObject = Viewer.createBody(planeVector, Vector.ZERO, this.newBodyTime, this.rand);
+			var planeVector = this.screenToCoordinatePlane(this.mousedownLocation);
+			var ghostObject = GameView.createBody(planeVector, Vector.ZERO, this.newBodyTime, this.rand);
 			return ghostObject;
 		} else {
 			return null;
@@ -277,30 +265,36 @@ var Viewer = function() {
 	}
 }
 
-Viewer.coordinatePlaneToScreen = function(planeVector) {
+GameView.prototype = Object.create(Panel.prototype);
+
+GameView.prototype.draw = function() {
+  Panel.prototype.draw.call(this, ctx, 0, 0);
+}
+
+GameView.prototype.coordinatePlaneToScreen = function(planeVector) {
 	/**
 	 * ScreenVec = (PlaneVec - ViewCenter) / Scale + ScreenCenter
 	 */
 	var windowCenter = Vector.fromComponents(window.innerWidth / 2, window.innerHeight / 2);
-	var screenVector = planeVector.subtract(myViewer.center).scMult(1 / myViewer.scale).add(windowCenter);
+	var screenVector = planeVector.subtract(this.center).scMult(1 / this.scale).add(windowCenter);
 	return screenVector;
 }
 
-Viewer.screenToCoordinatePlane = function(screenVector) {
+GameView.prototype.screenToCoordinatePlane = function(screenVector) {
 	/**
 	 * PlaneVec = (ScreenVec - ScreenCenter) * Scale + ViewCenter
 	 */
 	var windowCenter = Vector.fromComponents(window.innerWidth / 2, window.innerHeight / 2);
-	var planeVector = screenVector.subtract(windowCenter).scMult(myViewer.scale).add(myViewer.center);
+	var planeVector = screenVector.subtract(windowCenter).scMult(this.scale).add(this.center);
 	return planeVector;
 }
 
-Viewer.starColorFromRadius = function(radius) {
-	if (radius < Viewer.timeToRadius(2.5)) {
+GameView.starColorFromRadius = function(radius) {
+	if (radius < GameView.timeToRadius(2.5)) {
 		return 7;
-	} else if (radius < Viewer.timeToRadius(15)) {
-		var bigRadius = Viewer.timeToRadius(15);
-		var smallRadius = Viewer.timeToRadius(2.5);
+	} else if (radius < GameView.timeToRadius(15)) {
+		var bigRadius = GameView.timeToRadius(15);
+		var smallRadius = GameView.timeToRadius(2.5);
 		var color = (bigRadius - radius) / (bigRadius - smallRadius) * 7;
 		return color;
 	} else {
@@ -308,7 +302,7 @@ Viewer.starColorFromRadius = function(radius) {
 	}
 }
 
-Viewer.timeToRadius = function(t) {
+GameView.timeToRadius = function(t) {
 	if (t < 1) {
 		return 2 * t + 2;
 	} else if (t < 2) {
@@ -321,9 +315,9 @@ Viewer.timeToRadius = function(t) {
 	}
 }
 
-Viewer.createBody = function(positionVector, velocityVector, t, rand) { // Remind Kevin to edit values
+GameView.createBody = function(positionVector, velocityVector, t, rand) { // Remind Kevin to edit values
 	velocityVector = velocityVector.scMult(2);
-	var radius = Viewer.timeToRadius(t);
+	var radius = GameView.timeToRadius(t);
 	if (t > 2)
 	{
 		var newBody = new Star(positionVector, velocityVector, radius); // Remind Kevin to put stars.
