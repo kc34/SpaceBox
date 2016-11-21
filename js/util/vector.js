@@ -1,4 +1,5 @@
-Vector = function(vector) {
+"use strict";
+var Vector = function(vector) {
 	this.x = vector.x;
 	this.y = vector.y;
 }

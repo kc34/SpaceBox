@@ -1,3 +1,4 @@
+"use strict;"
 var Body = function(positionVector, velocityVector, radius) {
 	this.type = 'Generic space body';
 	this.positionVector = positionVector;

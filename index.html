@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>ThpatheBokth</title>
+<title>SpaceBox</title>
 <link rel='shortcut icon' href='assets/favicon.ico' type='image/x-icon'/ >
 </head>
 <body>
@@ -19,28 +19,32 @@ html, body {
 }
 </style>
 
-<script src="js/model.js"></script>
-<script src="js/viewer.js"></script>
-<script src="js/controller.js"></script>
-<script src="js/bodies.js"></script>
-<script src="js/lib/vector.js"></script>
+<script src="js/model/model.js"></script>
+<script src="js/view/viewer.js"></script>
+<script src="js/model/bodies.js"></script>
+<script src="js/util/vector.js"></script>
 <script src="assets/easing.js"></script>
 <script src="assets/graphics.js"></script>
 
 <script>
-
+"use strict";
 /**
  * 	Changelog:
- *  	Moved a bunch of shit around.
+ *  - Moved things around
+ *  - Merged Controller into Viewer
  */
 
 /**
  * 	Begin by creating our favorite singletons.
  */
 
-var myController = new Controller();
-var myViewer = new Viewer();
-var myModel =  new Sector();
+var myViewer;
+var myModel;
+
+function init() {
+  myViewer = new Viewer();
+  myModel = new Sector();
+};
 
 /**
  * 	Other important global variables (e.g. time-keeping, environment)
@@ -56,20 +60,20 @@ var currentTime = new Date();
  */
 function main() {
 
-	newTime = new Date();
-    frameTime = (newTime - currentTime) / 1000;
+	var newTime = new Date();
+	var frameTime = (newTime - currentTime) / 1000;
 
-    if ( frameTime > 0.1 )
-        frameTime = 0.1;
-    currentTime = newTime;
+	if (frameTime > 0.1) {
+		frameTime = 0.1;
+	}
+	currentTime = newTime;
 
-    accumulator += frameTime;
-    while ( accumulator >= TIME_STEP )
-    {
-        myModel.update(TIME_STEP);
-        totalElapsedTime += TIME_STEP;
-        accumulator -= TIME_STEP;
-    }
+	accumulator += frameTime;
+	while ( accumulator >= TIME_STEP ) {
+		myModel.update(TIME_STEP);
+		totalElapsedTime += TIME_STEP;
+		accumulator -= TIME_STEP;
+	}
 
 	myViewer.draw();
 }
@@ -80,46 +84,48 @@ canvas.height = window.innerHeight;
 
 /** Event: Mousedown followed by mouseup. */
 canvas.addEventListener('click', function(event) {
-	myController["clickHandler"]({x : event.clientX, y : event.clientY});
+	myViewer["clickHandler"]({x : event.clientX, y : event.clientY});
 }, false);
 
 /** Event: Left mousebutton press on the canvas. */
 canvas.addEventListener('mousedown', function(event) {
-	myController["mousedownHandler"]({x : event.clientX, y : event.clientY});
+	myViewer["mousedownHandler"]({x : event.clientX, y : event.clientY});
 }, false);
 
 /** Event: Left mousebutton release on the canvas. */
 canvas.addEventListener('mouseup', function(event) {
-	myController["mouseupHandler"]({x : event.clientX, y : event.clientY});
+	myViewer["mouseupHandler"]({x : event.clientX, y : event.clientY});
 }, false);
 
 /** Event: Any movement of the mouse over the canvas. */
 canvas.addEventListener('mousemove', function(event) {
-	myController["mousemoveHandler"]({x : event.clientX, y : event.clientY});
+	myViewer["mousemoveHandler"]({x : event.clientX, y : event.clientY});
 }, false);
 
 /** Event: Movement of the mousewheel. */
-canvas.addEventListener('mousewheel', function(event) {
-  console.log(event);
-	myController["mousewheelHandler"](event);
+window.addEventListener('mousewheel', function(event) {
+  event.preventDefault();
+	myViewer["mousewheelHandler"](event);
 }, false);
 
 /** Firefox mousewheel */
 canvas.addEventListener("DOMMouseScroll", function(event) {
   console.log(event);
-	myController["mousewheelHandler"]({clientX : event.clientX, clientY : event.clientY, wheelDelta : event.detail * -1});
+	myViewer["mousewheelHandler"]({clientX : event.clientX, clientY : event.clientY, wheelDelta : event.detail * -1});
 }, false);
 
 canvas.onmousedown = function(){ return false; };
 
-ctx = canvas.getContext("2d");
+var ctx = canvas.getContext("2d");
 
 /** Event: Any key press. */
 window.addEventListener('keydown', function(key) {
-	myController.keydownHandler(key);
+	myViewer.keydownHandler(key);
 }, false);
 
-var mainLooper = setInterval(main, TIME_STEP);
+init();
+
+var mainLooper = setInterval(main, 1000 * TIME_STEP);
 
 </script>
 

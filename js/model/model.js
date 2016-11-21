@@ -1,15 +1,16 @@
+"use strict";
 /**
  * Hey guys! I'm going to write kind of a template here that you guys
  * can fill out however you like. If you want to change function names
  * or given variable names, let me know and I will update the other
  * files to reflect the changes!
  */
- 
+
 /**
- * The Model is a container for a set of bodies. You'll be able to 
+ * The Model is a container for a set of bodies. You'll be able to
  * manipulate them through here!
  */
- 
+
 var Sector = function(){
 	this.bodies = [];
 	this.running = true;
@@ -25,11 +26,11 @@ Sector.prototype.update = function(dt) {
 	if (this.running) {
 		for (var idx in this.bodies) {
 			this.bodies[idx].move(dt);
-			
+
 			if (this.bodies.length > 1) {
-				
+
 				var accelVector = this.acceleration(this.bodies[idx]);
-				
+
 				this.bodies[idx].accelerate(accelVector, dt);
 			}
 			this.collisionUpdate();
@@ -72,7 +73,7 @@ Sector.prototype.collisionUpdate = function(){
 						var coor = this.bodies[idx2].getVector();
 						this.bodies.splice(idx2, 1);
 						colArray[0].push(coor);
-					} 
+					}
 					else if (Star.prototype.isPrototypeOf(this.bodies[idx2])){
 						var coor = this.bodies[idx].getVector();
 						this.bodies.splice(idx, 1);
@@ -94,12 +95,12 @@ Sector.prototype.collisionUpdate = function(){
 }
 
 Sector.prototype.neighbor = function(body) {
-	
+
 	var distArray = [];
 	var neighborArray = [];
-	
+
 	var orbitables = [];
-	
+
 	if (Moon.prototype.isPrototypeOf(body)) {
 		orbitables = this.bodies.filter(function(body) {
 			return (Planet.prototype.isPrototypeOf(body) ||
@@ -110,8 +111,8 @@ Sector.prototype.neighbor = function(body) {
 		orbitables = this.bodies.filter(function(body) {
 			return Star.prototype.isPrototypeOf(body);
 		});
-	} 
-	
+	}
+
 	if (orbitables.length != 0) {
 		for (var idx in orbitables) {
 			var dist = Vector.distance(body.getVector(), orbitables[idx].getVector());
@@ -120,7 +121,7 @@ Sector.prototype.neighbor = function(body) {
 				neighborArray.push(orbitables[idx]);
 			}
 		}
-		
+
 		var minDist = distArray[0];
 		for (var i = 1; i < distArray.length; i++) {
 			if (distArray[i] < minDist) {
@@ -148,14 +149,12 @@ Sector.prototype.acceleration = function(body) {
 Sector.getAcceleration = function(body_1, body_2) {
 	var d = body_2.getVector().subtract(body_1.getVector());
 	var dist = d.norm();
-	
+
 	if (dist == 0) {
 		return [0, 0];
 	}
 	var gravity = 1 / 5;
 	var magnitude = gravity * body_2.mass / Math.pow(dist, 2);
-	
+
 	return d.scMult(1 / dist).scMult(magnitude);
 }
-
-
