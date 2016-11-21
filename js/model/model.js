@@ -68,7 +68,6 @@ Sector.prototype.collisionUpdate = function(){
 				var tDist = Vector.distance(this.bodies[idx].getVector(), this.bodies[idx2].getVector());
 				var requiredSpace = this.bodies[idx].radius + this.bodies[idx2].radius;
 				if (requiredSpace > tDist){
-					console.log("COLLISION DETECTED", requiredSpace, tDist)
 					if (Star.prototype.isPrototypeOf(this.bodies[idx])) {
 						var coor = this.bodies[idx2].getVector();
 						this.bodies.splice(idx2, 1);
@@ -80,8 +79,6 @@ Sector.prototype.collisionUpdate = function(){
 						colArray[0].push(coor);
 					}
 					else {
-						console.log(this.bodies, idx);
-						console.log("Removing!", this.bodies[idx]);
 						var coor = this.bodies[idx].getVector().add(this.bodies[idx2].getVector()).scMult(0.5);
 						this.bodies.splice(idx, 1);
 						this.bodies.splice(idx2 - 1, 1);
