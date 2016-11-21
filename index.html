@@ -125,6 +125,34 @@ window.addEventListener('keydown', function(key) {
 	myViewer.keydownHandler(key);
 }, false);
 
+canvas.addEventListener('touchstart', function(event) {
+	event.preventDefault(); // not a click!
+	var touches = event.changedTouches;
+	console.log("Touched!", {x: touches[0].clientX, y: touches[0].clientY});
+
+	if (touches.length > 0)	{
+		myViewer.mousedownHandler({x: touches[0].clientX, y: touches[0].clientY});
+	}
+});
+
+canvas.addEventListener('touchmove', function(event) {
+	event.preventDefault(); // not a click!
+	var touches = event.changedTouches;
+
+	if (touches.length > 0)	{
+		myViewer.mousemoveHandler({x: touches[0].clientX, y: touches[0].clientY});
+	}
+});
+
+canvas.addEventListener('touchend', function(event) {
+	event.preventDefault(); // not a click!
+	var touches = event.changedTouches;
+
+	if (touches.length > 0)	{
+		myViewer.mouseupHandler({x: touches[0].clientX, y: touches[0].clientY});
+	}
+});
+
 init();
 
 var mainLooper = setInterval(main, 1000 * TIME_STEP);
