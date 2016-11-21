@@ -1,4 +1,3 @@
-"use strict";
 var Viewer = function() {
 	this.center = Vector.fromComponents(0, 0);
 	console.log(this.center);
