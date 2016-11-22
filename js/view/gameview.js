@@ -37,9 +37,10 @@ var GameView = function(model) {
 
     myModel.explosions.forEach(function(obj) {
       var screenVector = this.modelToViewCoordinate(obj.positionVector);
+      var explosionRadius = 50 / this.scale;
       var x = screenVector.x //
       var y = screenVector.y //
-      ctx.drawImage(this.images.explosion[obj.getSkinID()], x - 50, y - 50, 100, 100);
+      ctx.drawImage(this.images.explosion[obj.getSkinID()], x - explosionRadius, y - explosionRadius, 2 * explosionRadius, 2 * explosionRadius);
 
     }, this);
 
