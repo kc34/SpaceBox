@@ -29,10 +29,7 @@ var View = function(model) {
 	var undoButton = new Panel(40, window.innerHeight - 30, 20, 20);
 	undoButton.color = "#FF0000";
 	undoButton.mousedownHandler = function(event) {
-		console.log("Undo that shit");
-		console.log(myModel.bodies);
 		myModel.bodies.pop();
-		console.log(myModel.bodies);
 	}
 
 	this.addComponent("undoButton", undoButton);
@@ -40,12 +37,6 @@ var View = function(model) {
 }
 
 View.prototype = Object.create(ViewPanel.prototype);
-
-/*
-View.prototype.mousedownHandler = function(event) {
-	this.components["gamePanel"].mousedownHandler(event);
-}
-*/
 
 /**
  * Given a click, delegates to all of its components.

@@ -13,9 +13,8 @@
 
 var Sector = function(){
 	this.bodies = [];
+  this.explosions = [];
 	this.running = true;
-	this.highScore = 0;
-	this.score = 0;
 	this.k = 5;
 }
 
@@ -33,27 +32,24 @@ Sector.prototype.update = function(dt) {
 
 				this.bodies[idx].accelerate(accelVector, dt);
 			}
-			this.collisionUpdate();
 		}
-	}
-	var score = 0;
-	for (var idx in this.bodies) {
-		if (Planet.prototype.isPrototypeOf(this.bodies[idx])) {
-			var neighbor = this.neighbor(this.bodies[idx]);
-			if (neighbor != null) {
-				var distance = Vector.distance(this.bodies[idx].positionVector, neighbor.positionVector);
-				this.bodies[idx].periapsis = Math.min(this.bodies[idx].periapsis, distance);
-				this.bodies[idx].apoapsis = Math.max(this.bodies[idx].apoapsis, distance);
-				var eccentricity = (this.bodies[idx].apoapsis - this.bodies[idx].periapsis) / (this.bodies[idx].apoapsis + this.bodies[idx].periapsis);
-				if (this.bodies[idx].survivalTime > 1 && eccentricity < 1) {
-					score += 100 * (1 - eccentricity);
-				}
-			}
-		}
-	}
-	this.score = Math.floor(score);
-	if (this.score > this.highScore) {
-		this.highScore = this.score;
+
+    var collisionCoordinates = this.collisionUpdate();
+    for (idx in collisionCoordinates[0]) {
+      this.explosions.push(new Explosion(collisionCoordinates[0][idx]));
+    }
+    for (idx in collisionCoordinates[1]) {
+      this.explosions.push(new Explosion(collisionCoordinates[1][idx]));
+    }
+
+    this.collisionUpdate();
+
+    for (var idx in this.explosions) {
+      this.explosions[idx].update(dt);
+      if (this.explosions[idx].age > 1) {
+        this.explosions.splice(idx, 1);
+      }
+    }
 	}
 }
 Sector.prototype.getBodies = function() {
@@ -67,7 +63,7 @@ Sector.prototype.collisionUpdate = function(){
 			if (idx != idx2) {
 				var tDist = Vector.distance(this.bodies[idx].getVector(), this.bodies[idx2].getVector());
 				var requiredSpace = this.bodies[idx].radius + this.bodies[idx2].radius;
-				if (requiredSpace > tDist){
+				if (requiredSpace > tDist) {
 					if (Star.prototype.isPrototypeOf(this.bodies[idx])) {
 						var coor = this.bodies[idx2].getVector();
 						this.bodies.splice(idx2, 1);

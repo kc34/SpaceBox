@@ -35,16 +35,17 @@ var GameView = function(model) {
 
 		myModel.getBodies().forEach(this.drawObject, this);
 
+    myModel.explosions.forEach(function(obj) {
+      var screenVector = this.modelToViewCoordinate(obj.positionVector);
+      var x = screenVector.x //
+      var y = screenVector.y //
+      ctx.drawImage(this.images.explosion[obj.getSkinID()], x - 50, y - 50, 100, 100);
+
+    }, this);
+
 		if (this.getGhostBody() != null) {
 			this.drawObject(this.getGhostBody());
 		}
-
-		ctx.fillStyle = "#FFFFFF";
-		ctx.font = "30px Courier New";
-		ctx.fillText("High Score: " + myModel.highScore.toString(), 10, 30);
-		ctx.fillText("Score: " + myModel.score.toString(), 10, 70);
-		ctx.font = "10px Courier New";
-		ctx.fillText("(Less eccentricity => Higher Score!)", 10, 100);
 
   }
 
@@ -62,7 +63,7 @@ var GameView = function(model) {
 
 		// First order of business: know where to draw.
 		var positionVector = myObject.positionVector;
-		var screenVector = this.coordinatePlaneToScreen(positionVector);
+		var screenVector = this.modelToViewCoordinate(positionVector);
 
 		var screenRadius = myObject.radius / this.scale;
 		var objectType;
@@ -139,7 +140,7 @@ var GameView = function(model) {
 		if (direction == "OUT") {
 			if (this.scale < 10) {
 				// First, we need the mouse position in coordinate
-				var mouseCoordinate = this.screenToCoordinatePlane(screenVector);
+				var mouseCoordinate = this.viewToModelCoordinate(screenVector);
 				// Next, we need to measure the offset of that from the view center.
 				var mouseOffset = mouseCoordinate.subtract(this.center);
 				// Since we zoom out, the distance will become greater by the scaling factor.
@@ -149,7 +150,7 @@ var GameView = function(model) {
 			}
 		} else {
 			// First, we need the mouse position in coordinate
-			var mouseCoordinate = this.screenToCoordinatePlane(screenVector);
+			var mouseCoordinate = this.viewToModelCoordinate(screenVector);
 			// Next, we need to measure the offset of that from the view center.
 			var mouseOffset = mouseCoordinate.subtract(this.center);
 			// Since we zoom out, the distance will become greater by the scaling factor.
@@ -169,75 +170,6 @@ var GameView = function(model) {
 		"D" : function(gameView) { gameView.center.x += gameView.scale * 100; }
 	}
 
-  this.keydownHandler = function(keyEvent) {
-		var keynum = window.event ? keyEvent.keyCode : keyEvent.which; // window.event = userIsIE
-		var key = String.fromCharCode(keynum);
-		this.keyToFunctionMap[key](this);
-  }
-
-  this.clickHandler = function(event) {
-		// Used to be a link to the about page!
-	}
-
-	this.mousedownHandler = function(event) {
-		event = new Vector(event);
-		this.mouseState = "DOWN";
-		this.mousedownTime = new Date();
-
-		this.mousedownLocation = event;
-		this.mouseLocation = event;
-
-		this.rand = Math.random();
-	}
-
-	this.mouseupHandler = function(event) {
-		event = new Vector(event);
-		if (this.mouseState == "DOWN") {
-			this.newBodyTime = (new Date() - this.mousedownTime) / 1000;
-			var vector = this.screenToCoordinatePlane(event);
-			var newBody = GameView.createBody(vector, Vector.ZERO, this.newBodyTime, this.rand);
-			myModel.addBody(newBody);
-		} else if (this.mouseState == "MOVE") {
-			var posVector_1 = this.screenToCoordinatePlane(this.mousedownLocation);
-			var posVector_2 = this.screenToCoordinatePlane(event);
-			var deltaVector = posVector_2.subtract(posVector_1);
-			var newBody = GameView.createBody(posVector_1, deltaVector, this.newBodyTime, this.rand);
-			myModel.addBody(newBody);
-
-		}
-		this.mouseState = "UP";
-
-	}
-
-	this.mousemoveHandler = function(event) {
-		event = new Vector(event);
-		var timeSinceMouseDown = (new Date() - this.mousedownTime) / 1000;
-
-		if (this.mouseState == "DOWN" || this.mouseState == "PAN") {
-			var mouseDelta = event.subtract(this.mousedownLocation);
-			var dist = mouseDelta.norm();
-			if (timeSinceMouseDown > 0.25 && this.mouseState != "PAN") {
-				if (dist > this.GROW_MOVE_STOP_DIST) {
-					this.mouseState = "MOVE";
-					this.newBodyTime = (new Date() - this.mousedownTime) / 1000;
-				}
-			} else if (this.mouseState == "PAN" || (timeSinceMouseDown <= 0.25 && dist > this.GROW_MOVE_STOP_DIST)) {
-				var coordinateShift = this.screenToCoordinatePlane(event).subtract(this.screenToCoordinatePlane(this.mouseLocation))
-				this.center = this.center.subtract(coordinateShift);
-				this.mouseState = "PAN";
-			}
-		}
-		this.mouseLocation = event;
-	}
-
-	this.mousewheelHandler = function(event) {
-		if (event.wheelDelta > 0) {
-			this.zoomAt(Vector.fromComponents(event.clientX, event.clientY), "IN");
-		} else {
-			this.zoomAt(Vector.fromComponents(event.clientX, event.clientY), "OUT");
-		}
-	}
-
 	this.getGhostBody = function() {
 		// Time to draw a tentative star.
 		if (this.mouseState == "DOWN") {
@@ -246,7 +178,7 @@ var GameView = function(model) {
 			t -= this.mousedownTime;
 			t /= 1000;
 			if (t > 0.25) {
-				var planeVector = this.screenToCoordinatePlane(this.mousedownLocation);
+				var planeVector = this.viewToModelCoordinate(this.mousedownLocation);
 				var ghostObject = GameView.createBody(planeVector, Vector.ZERO, t, this.rand);
 				return ghostObject;
 			}
@@ -256,7 +188,7 @@ var GameView = function(model) {
 			ctx.moveTo(this.mousedownLocation.x, this.mousedownLocation.y);
 			ctx.lineTo(this.mouseLocation.x, this.mouseLocation.y);
 			ctx.stroke();
-			var planeVector = this.screenToCoordinatePlane(this.mousedownLocation);
+			var planeVector = this.viewToModelCoordinate(this.mousedownLocation);
 			var ghostObject = GameView.createBody(planeVector, Vector.ZERO, this.newBodyTime, this.rand);
 			return ghostObject;
 		} else {
@@ -271,7 +203,76 @@ GameView.prototype.draw = function() {
   Panel.prototype.draw.call(this, ctx, 0, 0);
 }
 
-GameView.prototype.coordinatePlaneToScreen = function(planeVector) {
+GameView.prototype.mousedownHandler = function(event) {
+  event = new Vector(event);
+  this.mouseState = "DOWN";
+  this.mousedownTime = new Date();
+
+  this.mousedownLocation = event;
+  this.mouseLocation = event;
+
+  this.rand = Math.random();
+}
+
+GameView.prototype.keydownHandler = function(keyEvent) {
+  var keynum = window.event ? keyEvent.keyCode : keyEvent.which; // window.event = userIsIE
+  var key = String.fromCharCode(keynum);
+  this.keyToFunctionMap[key](this);
+}
+
+GameView.prototype.clickHandler = function(event) {
+  // Used to be a link to the about page!
+}
+
+GameView.prototype.mouseupHandler = function(event) {
+  event = new Vector(event);
+  if (this.mouseState == "DOWN") {
+    this.newBodyTime = (new Date() - this.mousedownTime) / 1000;
+    var vector = this.viewToModelCoordinate(event);
+    var newBody = GameView.createBody(vector, Vector.ZERO, this.newBodyTime, this.rand);
+    myModel.addBody(newBody);
+  } else if (this.mouseState == "MOVE") {
+    var posVector_1 = this.viewToModelCoordinate(this.mousedownLocation);
+    var posVector_2 = this.viewToModelCoordinate(event);
+    var deltaVector = posVector_2.subtract(posVector_1);
+    var newBody = GameView.createBody(posVector_1, deltaVector, this.newBodyTime, this.rand);
+    myModel.addBody(newBody);
+
+  }
+  this.mouseState = "UP";
+
+}
+
+GameView.prototype.mousemoveHandler = function(event) {
+  event = new Vector(event);
+  var timeSinceMouseDown = (new Date() - this.mousedownTime) / 1000;
+
+  if (this.mouseState == "DOWN" || this.mouseState == "PAN") {
+    var mouseDelta = event.subtract(this.mousedownLocation);
+    var dist = mouseDelta.norm();
+    if (timeSinceMouseDown > 0.25 && this.mouseState != "PAN") {
+      if (dist > this.GROW_MOVE_STOP_DIST) {
+        this.mouseState = "MOVE";
+        this.newBodyTime = (new Date() - this.mousedownTime) / 1000;
+      }
+    } else if (this.mouseState == "PAN" || (timeSinceMouseDown <= 0.25 && dist > this.GROW_MOVE_STOP_DIST)) {
+      var coordinateShift = this.viewToModelCoordinate(event).subtract(this.viewToModelCoordinate(this.mouseLocation))
+      this.center = this.center.subtract(coordinateShift);
+      this.mouseState = "PAN";
+    }
+  }
+  this.mouseLocation = event;
+}
+
+GameView.prototype.mousewheelHandler = function(event) {
+  if (event.wheelDelta > 0) {
+    this.zoomAt(Vector.fromComponents(event.clientX, event.clientY), "IN");
+  } else {
+    this.zoomAt(Vector.fromComponents(event.clientX, event.clientY), "OUT");
+  }
+}
+
+GameView.prototype.modelToViewCoordinate = function(planeVector) {
 	/**
 	 * ScreenVec = (PlaneVec - ViewCenter) / Scale + ScreenCenter
 	 */
@@ -280,7 +281,7 @@ GameView.prototype.coordinatePlaneToScreen = function(planeVector) {
 	return screenVector;
 }
 
-GameView.prototype.screenToCoordinatePlane = function(screenVector) {
+GameView.prototype.viewToModelCoordinate = function(screenVector) {
 	/**
 	 * PlaneVec = (ScreenVec - ScreenCenter) * Scale + ViewCenter
 	 */

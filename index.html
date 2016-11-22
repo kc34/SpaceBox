@@ -20,6 +20,7 @@ html, body {
 </style>
 
 <script src="js/view/panel.js"></script>
+<script src="js/model/explosion.js"></script>
 <script src="js/view/view.js"></script>
 <script src="js/model/model.js"></script>
 <script src="js/view/gameview.js"></script>
@@ -128,7 +129,7 @@ window.addEventListener('keydown', function(key) {
 canvas.addEventListener('touchstart', function(event) {
 	event.preventDefault(); // not a click!
 	var touches = event.changedTouches;
-	console.log("Touched!", {x: touches[0].clientX, y: touches[0].clientY});
+	console.log("Touched!", touches);
 
 	if (touches.length > 0)	{
 		myViewer.mousedownHandler({x: touches[0].clientX, y: touches[0].clientY});
