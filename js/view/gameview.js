@@ -6,12 +6,12 @@
 var GameView = function(model) {
 	this.model = model;
 	Panel.call(this, 0, 0, window.innerWidth, window.innerHeight);
-	this.center = Vector.fromComponents(0, 0);
-  this.backgroundLayerCenter = Vector.fromComponents(0, 0);
-	this.scale = 1;
-  this.backgroundLayerScale = 1;
+  this.backgroundZ = 10000;
   this.explosionFrames = getExplosionFrames();
   this.backgroundImage = getBackgroundImage();
+
+  this.camera = {position: Vector.fromComponents(0, 0), z: window.innerWidth / 2}
+  this.FOV = 90;
 
 	this.scalingFactor = 1.1;
 
@@ -45,7 +45,7 @@ var GameView = function(model) {
     // Draw each explosion
     myModel.explosions.forEach(function(obj) {
       var screenVector = this.modelToViewCoordinate(obj.positionVector);
-      var explosionRadius = 50 / this.scale;
+      var explosionRadius = 50 / this.getScale();
       GameView.drawImageAt(ctx, this.explosionFrames[obj.getSkinID()], screenVector, explosionRadius);
     }, this);
 
@@ -77,23 +77,48 @@ var GameView = function(model) {
 
   this.drawBackground = function(ctx) {
 
-    var screenVector = this.backgroundToViewCoordinate(Vector.fromComponents(0, 0));
-    var pictureSize = 2000 / this.backgroundLayerScale;
+    ctx.globalAlpha = 1;
 
-    for (var i = -5; i < 6; i++) {
-      for (var j = -5; j < 6; j++) {
+    var pictureSize = 20000 / this.getZScale(this.backgroundZ);
+    var screenVector = this.zToViewCoordinate(this.backgroundZ, Vector.fromComponents(0, 0));
+
+    for (var i = -10; i < 11; i++) {
+      for (var j = -10; j < 11; j++) {
         GameView.drawImageAt(ctx, this.backgroundImage, screenVector.add(Vector.fromComponents(i, j).scMult(pictureSize)), pictureSize / 2);
       }
     }
 
-    ctx.fillStyle ="#FF0000";
-    ctx.rect(screenVector.x, screenVector.y, 10, 10);
-    ctx.fill();
+    ctx.globalAlpha = 0.6;
 
-    ctx.fillStyle ="#0000FF";
-    var screenVector = this.modelToViewCoordinate(Vector.fromComponents(0, 0))
-    ctx.rect(screenVector.x, screenVector.y, 10, 10);
-    ctx.fill();
+    var pictureSize = 10000 / this.getZScale(this.backgroundZ / 2);
+    var screenVector = this.zToViewCoordinate(this.backgroundZ / 2, Vector.fromComponents(pictureSize / 4, pictureSize / 10));
+
+    for (var i = -10; i < 11; i++) {
+      for (var j = -10; j < 11; j++) {
+        GameView.drawImageAt(ctx, this.backgroundImage, screenVector.add(Vector.fromComponents(i, j).scMult(pictureSize)), pictureSize / 2);
+      }
+    }
+
+/*
+    var pictureSize = this.backgroundZ * 2 / this.getZScale(this.backgroundZ);
+    var screenVector = this.zToViewCoordinate(this.backgroundZ, Vector.fromComponents(0, 0));
+
+    for (var i = -10; i < 11; i++) {
+      for (var j = -10; j < 11; j++) {
+        GameView.drawImageAt(ctx, this.backgroundImage, screenVector.add(Vector.fromComponents(i, j).scMult(pictureSize)), pictureSize / 2);
+      }
+    }
+
+    var pictureSize = this.backgroundZ * 2 * 2 / this.getZScale(this.backgroundZ * 2);
+    var screenVector = this.zToViewCoordinate(this.backgroundZ * 2, Vector.fromComponents(0, 0));
+
+    for (var i = -10; i < 11; i++) {
+      for (var j = -10; j < 11; j++) {
+        GameView.drawImageAt(ctx, this.backgroundImage, screenVector.add(Vector.fromComponents(i, j).scMult(pictureSize)), pictureSize / 2);
+      }
+    }
+*/
+    ctx.globalAlpha = 1;
 	}
 
 	this.drawObject = function(ctx, myObject) {
@@ -106,45 +131,22 @@ var GameView = function(model) {
 	 * scalingFactor.
 	 */
 	this.zoomAt = function(screenVector, direction) {
-		if (direction == "OUT") {
-			// First, we need the mouse position in coordinate
-			var mouseCoordinate = this.viewToModelCoordinate(screenVector);
-			// Next, we need to measure the offset of that from the view center.
-			var mouseOffset = mouseCoordinate.subtract(this.center);
-			// Since we zoom out, the distance will become greater by the scaling factor.
-			var scaledOffset = mouseOffset.scMult(this.scalingFactor);
-			this.center = mouseCoordinate.subtract(scaledOffset);
-			this.scale *= this.scalingFactor;
-
-      var v1 = this.viewToBackgroundCoordinate(screenVector);
-      var v2 = v1.subtract(this.backgroundLayerCenter);
-      var v3 = v2.scMult(Math.pow(this.scalingFactor, 0.5));
-      this.backgroundLayerCenter = v1.subtract(v3)
-      this.backgroundLayerScale *= Math.pow(this.scalingFactor, 0.5);
-      console.log(this.backgroundLayerScale);
-		} else {
-			// First, we need the mouse position in coordinate
-			var mouseCoordinate = this.viewToModelCoordinate(screenVector);
-			// Next, we need to measure the offset of that from the view center.
-			var mouseOffset = mouseCoordinate.subtract(this.center);
-			// Since we zoom out, the distance will become greater by the scaling factor.
-			var scaledOffset = mouseOffset.scMult(1 / this.scalingFactor);
-			this.center = mouseCoordinate.subtract(scaledOffset);
-			this.scale /= this.scalingFactor;
-
-      var v1 = this.viewToBackgroundCoordinate(screenVector);
-      var v2 = v1.subtract(this.backgroundLayerCenter);
-      var v3 = v2.scMult(1 / Math.pow(this.scalingFactor, 0.5));
-      this.backgroundLayerCenter = v1.subtract(v3)
-      this.backgroundLayerScale /= Math.pow(this.scalingFactor, 0.5);
-		}
-
-    if (this.scale > 100) {
-      this.scale = 100;
-    }
-
-    if (this.scale < 0.01) {
-      this.scale = 0.01;
+    if (direction == "OUT") {
+      if (this.camera.z > 25000)
+        return;
+      var mouseCoordinate = this.viewToModelCoordinate(screenVector);
+      var mouseOffset = mouseCoordinate.subtract(this.getCenter());
+      var scaledOffset = mouseOffset.scMult(this.scalingFactor);
+      this.setCenter(mouseCoordinate.subtract(scaledOffset));
+      this.camera.z *= this.scalingFactor;
+    } else {
+      if (this.camera.z < 10)
+        return;
+      var mouseCoordinate = this.viewToModelCoordinate(screenVector);
+      var mouseOffset = mouseCoordinate.subtract(this.getCenter());
+      var scaledOffset = mouseOffset.scMult(1 / this.scalingFactor);
+      this.setCenter(mouseCoordinate.subtract(scaledOffset));
+      this.camera.z /= this.scalingFactor;
     }
 	}
 
@@ -166,7 +168,35 @@ GameView.prototype.draw = function(ctx, offsetX, offsetY) {
 }
 
 GameView.prototype.pan = function(deltaVector) {
-  this.center = this.center.subtract(deltaVector);
+  this.setCenter(this.getCenter().subtract(deltaVector));
+}
+
+GameView.prototype.getScale = function() {
+  return this.camera.z / (window.innerWidth / 2);
+}
+
+GameView.prototype.setScale = function(value) {
+  this.camera.z = value * (window.innerWidth / 2);
+}
+
+GameView.prototype.getCenter = function() {
+  return this.camera.position;
+}
+
+GameView.prototype.setCenter = function(value) {
+  this.camera.position = value;
+}
+
+GameView.prototype.getBackgroundCenter = function() {
+  return this.camera.position;
+}
+
+GameView.prototype.getBackgroundScale = function() {
+  return (this.camera.z + this.backgroundZ) / (window.innerWidth / 2);
+}
+
+GameView.prototype.getZScale = function(z) {
+  return (z + this.camera.z) / (window.innerWidth / 2);
 }
 
 GameView.prototype.mousedownHandler = function(event) {
@@ -224,16 +254,9 @@ GameView.prototype.mousemoveHandler = function(event) {
     } else if (this.mouseState == "PAN" || (timeSinceMouseDown <= 0.25 && dist > this.GROW_MOVE_STOP_DIST)) {
       // var coordinateShift = this.viewToModelCoordinate(event).subtract(this.viewToModelCoordinate(this.mouseLocation))
       //
-      var coordinateShift = event.subtract(this.mouseLocation).scMult(this.scale);
+      var coordinateShift = event.subtract(this.mouseLocation).scMult(this.getScale());
       this.pan(coordinateShift);
-      // this.center = this.center.subtract(coordinateShift);
-
-      var v1 = this.viewToBackgroundCoordinate(event).subtract(this.viewToBackgroundCoordinate(this.mouseLocation))
-      this.backgroundLayerCenter = this.backgroundLayerCenter.subtract(v1.scMult(0.5));
       this.mouseState = "PAN";
-
-      console.log(this.backgroundLayerCenter)
-      console.log(this.center)
     }
   }
   this.mouseLocation = event;
@@ -252,7 +275,7 @@ GameView.prototype.modelToViewCoordinate = function(modelVector) {
 	 * ScreenVec = (PlaneVec - ViewCenter) / Scale + ScreenCenter
 	 */
 	var viewCenter = Vector.fromComponents(window.innerWidth / 2, window.innerHeight / 2);
-	var viewVector = modelVector.subtract(this.center).scMult(1 / this.scale).add(viewCenter);
+	var viewVector = modelVector.subtract(this.getCenter()).scMult(1 / this.getScale()).add(viewCenter);
 	return viewVector;
 }
 
@@ -261,26 +284,17 @@ GameView.prototype.viewToModelCoordinate = function(viewVector) {
 	 * PlaneVec = (ScreenVec - ScreenCenter) * Scale + ViewCenter
 	 */
 	var viewCenter = Vector.fromComponents(window.innerWidth / 2, window.innerHeight / 2);
-	var modelVector = viewVector.subtract(viewCenter).scMult(this.scale).add(this.center);
+	var modelVector = viewVector.subtract(viewCenter).scMult(this.getScale()).add(this.getCenter());
 	return modelVector;
 }
 
-GameView.prototype.backgroundToViewCoordinate = function(backgroundVector) {
+GameView.prototype.zToViewCoordinate = function(z, backgroundVector) {
 	/**
 	 * ScreenVec = (PlaneVec - ViewCenter) / Scale + ScreenCenter
 	 */
 	var viewCenter = Vector.fromComponents(window.innerWidth / 2, window.innerHeight / 2);
-	var viewVector = backgroundVector.subtract(this.backgroundLayerCenter).scMult(1 / this.backgroundLayerScale).add(viewCenter);
+	var viewVector = backgroundVector.subtract(this.getBackgroundCenter()).scMult(1 / this.getZScale(z)).add(viewCenter);
 	return viewVector;
-}
-
-GameView.prototype.viewToBackgroundCoordinate = function(viewVector) {
-	/**
-	 * PlaneVec = (ScreenVec - ScreenCenter) * Scale + ViewCenter
-	 */
-	var viewCenter = Vector.fromComponents(window.innerWidth / 2, window.innerHeight / 2);
-	var backgroundVector = viewVector.subtract(viewCenter).scMult(this.backgroundLayerScale).add(this.backgroundLayerCenter);
-	return backgroundVector;
 }
 
 GameView.timeToRadius = function(t) {
