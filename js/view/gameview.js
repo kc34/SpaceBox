@@ -117,7 +117,7 @@ var GameView = function(model) {
     var mouseOffset = mouseCoordinate.subtract(this.getCenter());
     var scaledOffset = mouseOffset.scMult(zoom);
     this.setCenter(mouseCoordinate.subtract(scaledOffset));
-    this.camera.z *= zoom;
+    this.setScale(this.getScale() * zoom);
 	}
 
 	this.keyToFunctionMap = {
@@ -263,12 +263,12 @@ GameView.prototype.touchmoveHandler = function(event) {
     if (identifier == 0) {
       var newVec0 = Vector.fromComponents(event.clientX, event.clientY);
       var newDist = Vector.distance(newVec0, oldVec1);
-      this.zoomAt(oldVec1, newDist / oldDist);
+      this.zoomAt(oldVec1, oldDist / newDist);
       this.touchCache[0] = event;
     } else if (identifier == 1) {
       var newVec1 = Vector.fromComponents(event.clientX, event.clientY);
       var newDist = Vector.distance(oldVec0, newVec1);
-      this.zoomAt(oldVec0, newDist / oldDist);
+      this.zoomAt(oldVec0, oldDist / newDist);
       this.touchCache[1] = event;
     }
 
