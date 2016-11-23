@@ -61,7 +61,7 @@ var View = function(model) {
       this.color = "#888888"
     }
   }
-  undoButton.touchstartHandler = function(event) {
+  pauseButton.touchstartHandler = function(event) {
     this.clickHandler(event);
   }
 
