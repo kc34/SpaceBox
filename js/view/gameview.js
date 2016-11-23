@@ -256,6 +256,7 @@ GameView.prototype.touchmoveHandler = function(event) {
       this.touchCache[0] = event;
     }
   } else if (this.touchCache.length > 1) {
+    this.mouseState = "ZOOM";
     var identifier = event.identifier;
     var oldVec0 = Vector.fromComponents(this.touchCache[0].clientX, this.touchCache[0].clientY);
     var oldVec1 = Vector.fromComponents(this.touchCache[1].clientX, this.touchCache[1].clientY);
@@ -282,6 +283,9 @@ GameView.prototype.touchendHandler = function(event) {
   this.touchCache = this.touchCache.filter(function(touchEvent) {
     return touchEvent.identifier != event.identifier
   }, this);
+  if (this.touchCache.length == 0) {
+    this.mouseState = "UP";
+  }
   console.log(this.touchCache);
 }
 
