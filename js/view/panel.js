@@ -1,8 +1,9 @@
 "use strict";
 /**
- * Panel 0.1.3
+ * Panel 0.1.3.1
  *
  * By Kevin Chang
+ * + touchstart now calls mouseDown and click. Dangerous?
  * + runOnTopComponent: functional
  * + Added addEventListener calls in ViewPanel.
  *
@@ -195,6 +196,7 @@ function ViewPanel(canvas) {
   	var touches = event.changedTouches;
 
   	if (touches.length > 0)	{
+      instance.clickHandler({clientX: touches[0].clientX, clientY: touches[0].clientY});
   		instance.mousedownHandler({clientX: touches[0].clientX, clientY: touches[0].clientY});
   	}
   });
