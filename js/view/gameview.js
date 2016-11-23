@@ -253,6 +253,7 @@ GameView.prototype.touchmoveHandler = function(event) {
     var identifier = event.identifier;
     if (identifier == 0) {
       this.mousemoveHandler(event);
+      this.touchCache[0] = event;
     }
   } else if (this.touchCache.length > 1) {
     var identifier = event.identifier;
@@ -263,10 +264,12 @@ GameView.prototype.touchmoveHandler = function(event) {
       var newVec0 = Vector.fromComponents(event.clientX, event.clientY);
       var newDist = Vector.distance(newVec0, oldVec1);
       this.zoomAt(oldVec1, newDist / oldDist);
+      this.touchCache[0] = event;
     } else if (identifier == 1) {
       var newVec1 = Vector.fromComponents(event.clientX, event.clientY);
       var newDist = Vector.distance(oldVec0, newVec1);
       this.zoomAt(oldVec0, newDist / oldDist);
+      this.touchCache[1] = event;
     }
 
   }
