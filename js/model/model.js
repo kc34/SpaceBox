@@ -131,12 +131,21 @@ Sector.prototype.neighbor = function(body) {
 
 // Gets gravitational acceleration on body1 from body2.
 Sector.prototype.acceleration = function(body) {
-	var bestNeighbor = this.neighbor(body);
+  /*
+  var bestNeighbor = this.neighbor(body);
 	if (bestNeighbor != null) {
 		return Sector.getAcceleration(body, bestNeighbor);
 	} else {
 		return Vector.ZERO;
 	}
+  */
+  var accelerationVector = Vector.ZERO;
+  for (var idx in this.bodies) {
+    if (body != this.bodies[idx]) {
+      accelerationVector = accelerationVector.add(Sector.getAcceleration(body, this.bodies[idx]));
+    }
+  }
+  return accelerationVector;
 }
 
 Sector.getAcceleration = function(body_1, body_2) {
@@ -144,7 +153,7 @@ Sector.getAcceleration = function(body_1, body_2) {
 	var dist = d.norm();
 
 	if (dist == 0) {
-		return [0, 0];
+		return Vector.ZERO;
 	}
 	var gravity = 1 / 5;
 	var magnitude = gravity * body_2.mass / Math.pow(dist, 2);

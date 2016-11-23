@@ -98,31 +98,7 @@ var GameView = function(model) {
         GameView.drawImageAt(ctx, this.backgroundImage, screenVector.add(Vector.fromComponents(i, j).scMult(pictureSize)), pictureSize / 2);
       }
     }
-
-/*
-    var pictureSize = this.backgroundZ * 2 / this.getZScale(this.backgroundZ);
-    var screenVector = this.zToViewCoordinate(this.backgroundZ, Vector.fromComponents(0, 0));
-
-    for (var i = -10; i < 11; i++) {
-      for (var j = -10; j < 11; j++) {
-        GameView.drawImageAt(ctx, this.backgroundImage, screenVector.add(Vector.fromComponents(i, j).scMult(pictureSize)), pictureSize / 2);
-      }
-    }
-
-    var pictureSize = this.backgroundZ * 2 * 2 / this.getZScale(this.backgroundZ * 2);
-    var screenVector = this.zToViewCoordinate(this.backgroundZ * 2, Vector.fromComponents(0, 0));
-
-    for (var i = -10; i < 11; i++) {
-      for (var j = -10; j < 11; j++) {
-        GameView.drawImageAt(ctx, this.backgroundImage, screenVector.add(Vector.fromComponents(i, j).scMult(pictureSize)), pictureSize / 2);
-      }
-    }
-*/
     ctx.globalAlpha = 1;
-	}
-
-	this.drawObject = function(ctx, myObject) {
-    myObject.accept(DrawAlgo, [ctx, this]);
 	}
 
 	/**

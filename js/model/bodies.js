@@ -23,7 +23,7 @@ Body.PLANET_DENSITY = 500;
 Body.MOON_DENSITY = 300;
 
 var Star = function(positionVector, velocityVector, t) {
-	Body.call(this, positionVector, Vector.ZERO, t);
+	Body.call(this, positionVector, velocityVector, t);
 	this.type = 'Star';
 	this.mass = Body.STAR_DENSITY * Math.pow(this.radius, 3);
 }
