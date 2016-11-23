@@ -28,7 +28,7 @@ var View = function(model) {
 
 	var undoButton = new Panel(40, window.innerHeight - 30, 20, 20);
 	undoButton.color = "#FF0000";
-	undoButton.mousedownHandler = function(event) {
+	undoButton.clickHandler = function(event) {
 		myModel.bodies.pop();
 	}
 
@@ -41,31 +41,3 @@ View.prototype = Object.create(ViewPanel.prototype);
 /**
  * Given a click, delegates to all of its components.
  */
-View.prototype.mousedownHandler = function(event) {
-
-  var sortedPanels = Object.keys(this.components) // Gets keys
-    .map(function(key) { return this.components[key] }, this) // Gets panel references
-    .filter(function(panel) { return Panel.containsPoint(panel, event)}) // Removes unclicked ones
-    .sort(function(panel1, panel2) { return -1 * (panel1.z_index - panel2.z_index) }); // Sorts descending
-
-  if (sortedPanels.length > 0) {
-    var panel = sortedPanels[0];
-    panel.mousedownHandler({x : event.x - panel.x, y : event.y - panel.y})
-  }
-}
-
-View.prototype.mouseupHandler = function(event) {
-	this.components["gamePanel"].mouseupHandler(event);
-}
-
-View.prototype.mousemoveHandler = function(event) {
-	this.components["gamePanel"].mousemoveHandler(event);
-}
-
-View.prototype.mousewheelHandler = function(event) {
-	this.components["gamePanel"].mousewheelHandler(event);
-}
-
-View.prototype.keydownHandler = function(key) {
-	this.components["gamePanel"].keydownHandler(key);
-}

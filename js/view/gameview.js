@@ -29,11 +29,11 @@ var GameView = function(model) {
 	/**
 	 * This function will draw everything!
 	 */
-	this.drawPanel = function() {
+	this.drawPanel = function(ctx, windowX, windowY) {
 
-		this.drawBackground();
+		this.drawBackground(ctx);
 
-		myModel.getBodies().forEach(this.drawObject, this);
+		myModel.getBodies().forEach(function(obj) {this.drawObject(ctx, obj)}, this);
 
     myModel.explosions.forEach(function(obj) {
       var screenVector = this.modelToViewCoordinate(obj.positionVector);
@@ -44,13 +44,13 @@ var GameView = function(model) {
 
     }, this);
 
-		if (this.getGhostBody() != null) {
-			this.drawObject(this.getGhostBody());
+		if (this.getGhostBody(ctx) != null) {
+			this.drawObject(ctx, this.getGhostBody(ctx));
 		}
 
   }
 
-  this.drawBackground = function() {
+  this.drawBackground = function(ctx) {
 		var pictureSize = 2000 / Math.pow(this.scale, 0.2);
 		for (var i = -10; i < 10; i++) {
 			for (var j = -10; j < 10; j++) {
@@ -60,7 +60,7 @@ var GameView = function(model) {
 		}
 	}
 
-	this.drawObject = function(myObject) {
+	this.drawObject = function(ctx, myObject) {
 
 		// First order of business: know where to draw.
 		var positionVector = myObject.positionVector;
@@ -171,7 +171,7 @@ var GameView = function(model) {
 		"D" : function(gameView) { gameView.center.x += gameView.scale * 100; }
 	}
 
-	this.getGhostBody = function() {
+	this.getGhostBody = function(ctx) {
 		// Time to draw a tentative star.
 		if (this.mouseState == "DOWN") {
 			// wait for time to be bigger than 0.25 seconds
@@ -200,12 +200,12 @@ var GameView = function(model) {
 
 GameView.prototype = Object.create(Panel.prototype);
 
-GameView.prototype.draw = function() {
+GameView.prototype.draw = function(ctx, offsetX, offsetY) {
   Panel.prototype.draw.call(this, ctx, 0, 0);
 }
 
 GameView.prototype.mousedownHandler = function(event) {
-  event = new Vector(event);
+  event = new Vector({x : event.clientX, y : event.clientY});
   this.mouseState = "DOWN";
   this.mousedownTime = new Date();
 
@@ -226,7 +226,7 @@ GameView.prototype.clickHandler = function(event) {
 }
 
 GameView.prototype.mouseupHandler = function(event) {
-  event = new Vector(event);
+  event = new Vector({x : event.clientX, y : event.clientY});
   if (this.mouseState == "DOWN") {
     this.newBodyTime = (new Date() - this.mousedownTime) / 1000;
     var vector = this.viewToModelCoordinate(event);
@@ -245,7 +245,7 @@ GameView.prototype.mouseupHandler = function(event) {
 }
 
 GameView.prototype.mousemoveHandler = function(event) {
-  event = new Vector(event);
+  event = new Vector({x : event.clientX, y : event.clientY});
   var timeSinceMouseDown = (new Date() - this.mousedownTime) / 1000;
 
   if (this.mouseState == "DOWN" || this.mouseState == "PAN") {

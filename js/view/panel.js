@@ -1,8 +1,14 @@
 "use strict";
 /**
- * Panel 0.1.1
+ * Panel 0.1.3
  *
  * By Kevin Chang
+ * + runOnTopComponent: functional
+ * + Added addEventListener calls in ViewPanel.
+ *
+ * TODO:
+ * + Dispatch touch events
+ * + Focus to know where to send key events
  */
 
 /**
@@ -17,6 +23,7 @@ function Panel(x, y, width, height) {
   this.width = width;
   this.height = height;
   this.color = "#000000"
+  this.parentComponent = null;
   this.components = {};
   this.z_index = 0; // Inspired by CSS. Higher number means it will be up front.
 }
@@ -64,24 +71,58 @@ Panel.prototype.postprocess = function(ctx, windowX, windowY) {};
  *  (3, 3) -> false
  */
 Panel.containsPoint = function(panel, point) {
-  return ((panel.x <= point.x && point.x <= panel.x + panel.width)
-      && (panel.y <= point.y && point.y <= panel.y + panel.height));
+  return ((panel.x <= point.clientX && point.clientX <= panel.x + panel.width)
+      && (panel.y <= point.clientY && point.clientY <= panel.y + panel.height));
+}
+
+Panel.prototype.runOnTopComponent = function(mouseEvent, eventHandler) {
+
+  return Object.keys(this.components) // Gets keys
+    .map(function(key) { return this.components[key] }, this) // Gets panel references
+    .filter(function(panel) { return Panel.containsPoint(panel, mouseEvent)}) // Removes unclicked ones
+    .sort(function(panel1, panel2) { return -1 * (panel1.z_index - panel2.z_index) }) // Sorts descending
+    .slice(0, 1)
+    .forEach(eventHandler);
 }
 
 /**
- * Given a click, delegates to all of its components.
+ * Given a click, delegates to its top component.
  */
 Panel.prototype.clickHandler = function(event) {
+  this.runOnTopComponent(event, function(component) {
+    component.clickHandler({clientX : event.clientX - component.x, clientY : event.clientY - component.y});
+  });
+}
 
-  var sortedPanels = Object.keys(this.components) // Gets keys
+Panel.prototype.mousedownHandler = function(event) {
+  this.runOnTopComponent(event, function(component) {
+    component.mousedownHandler({clientX : event.clientX - component.x, clientY : event.clientY - component.y});
+  });
+}
+
+Panel.prototype.mouseupHandler = function(event) {
+  this.runOnTopComponent(event, function(component) {
+    component.mouseupHandler({clientX : event.clientX - component.x, clientY : event.clientY - component.y});
+  });
+}
+
+Panel.prototype.mousemoveHandler = function(event) {
+  this.runOnTopComponent(event, function(component) {
+    component.mousemoveHandler({clientX : event.clientX - component.x, clientY : event.clientY - component.y});
+  });
+}
+
+Panel.prototype.mousewheelHandler = function(event) {
+  this.runOnTopComponent(event, function(component) {
+    component.mousewheelHandler({clientX : event.clientX - component.x, clientY : event.clientY - component.y, wheelDelta : event.wheelDelta });
+  });
+}
+
+// TODO: Add focus
+Panel.prototype.keydownHandler = function(key) {
+  Object.keys(this.components) // Gets keys
     .map(function(key) { return this.components[key] }, this) // Gets panel references
-    .filter(function(panel) { return Panel.containsPoint(panel, event)}) // Removes unclicked ones
-    .sort(function(panel1, panel2) { return -1 * (panel1.z_index - panel2.z_index) }); // Sorts descending
-
-  if (sortedPanels.length > 0) {
-    var panel = sortedPanels[0];
-    panel.clickHandler({x : event.x - panel.x, y : event.y - panel.y})
-  }
+    .forEach(function(panel) { panel.keydownHandler(key)} ) // Calls all the panel handlers
 }
 
 /**
@@ -89,6 +130,7 @@ Panel.prototype.clickHandler = function(event) {
  */
 Panel.prototype.addComponent = function(name, component) {
   this.components[name] = component;
+  this.components[name].parent = this;
 }
 
 /**
@@ -115,6 +157,65 @@ function ViewPanel(canvas) {
   this.canvas.height = window.innerHeight;
   this.canvas.onmousedown = function(){ return false; };
   this.ctx = this.canvas.getContext("2d");
+
+  var instance = this;
+
+  this.canvas.onmousedown = function(){ return false; };
+
+  this.canvas.addEventListener('click', function(event) {
+  	instance.clickHandler(event);
+  }, false);
+
+  this.canvas.addEventListener('mousedown', function(event) {
+  	instance.mousedownHandler(event);
+  }, false);
+
+  this.canvas.addEventListener('mouseup', function(event) {
+  	instance.mouseupHandler(event);
+  }, false);
+
+  this.canvas.addEventListener('mousemove', function(event) {
+  	instance.mousemoveHandler(event);
+  }, false);
+
+  this.canvas.addEventListener('mousewheel', function(event) {
+  	instance.mousewheelHandler(event);
+  }, false);
+
+  this.canvas.addEventListener("DOMMouseScroll", function(event) {
+  	instance.mousewheelHandler({clientX : event.clientX, clientY : event.clientY, wheelDelta : event.detail * -1});
+  }, false);
+
+  window.addEventListener('keydown', function(key) {
+  	instance.keydownHandler(key);
+  }, false);
+
+  this.canvas.addEventListener('touchstart', function(event) {
+  	event.preventDefault(); // not a click!
+  	var touches = event.changedTouches;
+
+  	if (touches.length > 0)	{
+  		instance.mousedownHandler({clientX: touches[0].clientX, clientY: touches[0].clientY});
+  	}
+  });
+
+  this.canvas.addEventListener('touchmove', function(event) {
+  	event.preventDefault(); // not a click!
+  	var touches = event.changedTouches;
+
+  	if (touches.length > 0)	{
+  		instance.mousemoveHandler({clientX: touches[0].clientX, clientY: touches[0].clientY});
+  	}
+  });
+
+  this.canvas.addEventListener('touchend', function(event) {
+  	event.preventDefault(); // not a click!
+  	var touches = event.changedTouches;
+
+  	if (touches.length > 0)	{
+  		instance.mouseupHandler({clientX: touches[0].clientX, clientY: touches[0].clientY});
+  	}
+  });
 }
 
 ViewPanel.prototype = Object.create(Panel.prototype);
@@ -123,19 +224,8 @@ ViewPanel.prototype = Object.create(Panel.prototype);
  * Specialized draw used to start GUI hierarcies.
  */
 ViewPanel.prototype.draw = function() {
-  Panel.prototype.draw.call(this, this.ctx, 0, 0);
-}
-
-/**
- * Default window setter. Sets this panel to take up all available space.
- */
-ViewPanel.prototype.preprocess = function() {
   this.setWindow(0, 0, window.innerWidth, window.innerHeight);
-}
-/**
- * Given a click, delegates to all of its components.
- */
-ViewPanel.prototype.clickHandler = function(event) {
-  var canvasRect = this.canvas.getBoundingClientRect();
-  Panel.prototype.clickHandler.call(this, {x: event.x - canvasRect.left, y: event.y - canvasRect.top});
+  this.canvas.width = window.innerWidth;
+  this.canvas.height = window.innerHeight;
+  Panel.prototype.draw.call(this, this.ctx, 0, 0);
 }

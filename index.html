@@ -33,8 +33,7 @@ html, body {
 "use strict";
 /**
  * 	Changelog:
- *  - Moved things around
- *  - Merged Controller into Viewer
+ *  - Updated to use Panel 0.1.3
  */
 
 /**
@@ -46,7 +45,6 @@ var myModel;
 
 function init() {
   myModel = new Sector();
-  //myViewer = new GameView(myModel);
 	myViewer = new View(myModel);
 };
 
@@ -81,78 +79,6 @@ function main() {
 
 	myViewer.draw();
 }
-
-var canvas = document.getElementById("myCanvas");
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
-
-/** Event: Mousedown followed by mouseup. */
-canvas.addEventListener('click', function(event) {
-	myViewer["clickHandler"]({x : event.clientX, y : event.clientY});
-}, false);
-
-/** Event: Left mousebutton press on the canvas. */
-canvas.addEventListener('mousedown', function(event) {
-	myViewer["mousedownHandler"]({x : event.clientX, y : event.clientY});
-}, false);
-
-/** Event: Left mousebutton release on the canvas. */
-canvas.addEventListener('mouseup', function(event) {
-	myViewer["mouseupHandler"]({x : event.clientX, y : event.clientY});
-}, false);
-
-/** Event: Any movement of the mouse over the canvas. */
-canvas.addEventListener('mousemove', function(event) {
-	myViewer["mousemoveHandler"]({x : event.clientX, y : event.clientY});
-}, false);
-
-/** Event: Movement of the mousewheel. */
-window.addEventListener('mousewheel', function(event) {
-  event.preventDefault();
-	myViewer["mousewheelHandler"](event);
-}, false);
-
-/** Firefox mousewheel */
-canvas.addEventListener("DOMMouseScroll", function(event) {
-	myViewer["mousewheelHandler"]({clientX : event.clientX, clientY : event.clientY, wheelDelta : event.detail * -1});
-}, false);
-
-canvas.onmousedown = function(){ return false; };
-
-var ctx = canvas.getContext("2d");
-
-/** Event: Any key press. */
-window.addEventListener('keydown', function(key) {
-	myViewer.keydownHandler(key);
-}, false);
-
-canvas.addEventListener('touchstart', function(event) {
-	event.preventDefault(); // not a click!
-	var touches = event.changedTouches;
-	console.log("Touched!", touches);
-
-	if (touches.length > 0)	{
-		myViewer.mousedownHandler({x: touches[0].clientX, y: touches[0].clientY});
-	}
-});
-
-canvas.addEventListener('touchmove', function(event) {
-	event.preventDefault(); // not a click!
-	var touches = event.changedTouches;
-
-	if (touches.length > 0)	{
-		myViewer.mousemoveHandler({x: touches[0].clientX, y: touches[0].clientY});
-	}
-});
-
-canvas.addEventListener('touchend', function(event) {
-	event.preventDefault(); // not a click!
-	var touches = event.changedTouches;
-
-	if (touches.length > 0)	{
-		myViewer.mouseupHandler({x: touches[0].clientX, y: touches[0].clientY});
-	}
-});
 
 init();
 
