@@ -280,8 +280,9 @@ GameView.prototype.touchendHandler = function(event) {
     this.mouseupHandler(event);
   }
   this.touchCache = this.touchCache.filter(function(touchEvent) {
-    return touchEvent.identifier == this.identifier
+    return touchEvent.identifier != event.identifier
   }, this);
+  console.log(this.touchCache);
 }
 
 GameView.prototype.modelToViewCoordinate = function(modelVector) {
