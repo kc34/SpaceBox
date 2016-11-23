@@ -16,8 +16,8 @@ DrawAlgo.starMethod = function(args) {
   var positionVector = myObject.positionVector;
   var viewVector = view.modelToViewCoordinate(positionVector);
 
-  var viewRadius = myObject.radius / view.getScale() * DrawAlgo.STAR_RESIZE;
-	var skinData = DrawAlgo.starColorFromRadius(myObject.radius);
+  var viewRadius = myObject.getRadius() / view.getScale() * DrawAlgo.STAR_RESIZE;
+	var skinData = DrawAlgo.starColorFromRadius(myObject.getRadius());
 	var skinId = Math.floor(skinData);
 	var progressToNext = skinData - skinId;
 	var val1 = 1 - progressToNext;
@@ -55,7 +55,7 @@ DrawAlgo.planetMethod = function(args) {
   var positionVector = myObject.positionVector;
   var viewVector = view.modelToViewCoordinate(positionVector);
 
-  var viewRadius = myObject.radius / view.getScale() * DrawAlgo.PLANET_RESIZE;
+  var viewRadius = myObject.getRadius() / view.getScale() * DrawAlgo.PLANET_RESIZE;
 	var skinId = myObject.img;
   GameView.drawImageAt(ctx, DrawAlgo.SPRITES.planet[skinId], viewVector, viewRadius);
 }
@@ -66,7 +66,7 @@ DrawAlgo.moonMethod = function(args) {
   var myObject = args[2];
 
   var viewVector = view.modelToViewCoordinate(myObject.positionVector);
-  var viewRadius = (myObject.radius / view.getScale()) * DrawAlgo.MOON_RESIZE;
+  var viewRadius = (myObject.getRadius() / view.getScale()) * DrawAlgo.MOON_RESIZE;
 	var skinId = myObject.img;
   GameView.drawImageAt(ctx, DrawAlgo.SPRITES.moon[skinId], viewVector, viewRadius);
 }

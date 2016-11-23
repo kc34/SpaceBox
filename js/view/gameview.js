@@ -256,6 +256,7 @@ GameView.prototype.touchmoveHandler = function(event) {
       this.touchCache[0] = event;
     }
   } else if (this.touchCache.length > 1) {
+    // Cancel any panning or body creation.
     this.mouseState = "ZOOM";
     var identifier = event.identifier;
     var oldVec0 = Vector.fromComponents(this.touchCache[0].clientX, this.touchCache[0].clientY);
@@ -264,12 +265,12 @@ GameView.prototype.touchmoveHandler = function(event) {
     if (identifier == 0) {
       var newVec0 = Vector.fromComponents(event.clientX, event.clientY);
       var newDist = Vector.distance(newVec0, oldVec1);
-      this.zoomAt(oldVec1, oldDist / newDist);
+      this.zoomAt(oldVec1, 1 / (newDist / oldDist));
       this.touchCache[0] = event;
     } else if (identifier == 1) {
       var newVec1 = Vector.fromComponents(event.clientX, event.clientY);
       var newDist = Vector.distance(oldVec0, newVec1);
-      this.zoomAt(oldVec0, oldDist / newDist);
+      this.zoomAt(oldVec0, 1 / (newDist / oldDist));
       this.touchCache[1] = event;
     }
 

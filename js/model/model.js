@@ -62,9 +62,10 @@ Sector.prototype.collisionUpdate = function(){
 		for (var idx2 = idx + 1; idx2 < this.bodies.length; idx2++) {
 			if (idx != idx2) {
 				var tDist = Vector.distance(this.bodies[idx].getVector(), this.bodies[idx2].getVector());
-				var requiredSpace = this.bodies[idx].radius + this.bodies[idx2].radius;
+				var requiredSpace = this.bodies[idx].getRadius() + this.bodies[idx2].getRadius();
 				if (requiredSpace > tDist) {
 					if (Star.prototype.isPrototypeOf(this.bodies[idx])) {
+            this.bodies[idx].eat(this.bodies[idx2]);
 						var coor = this.bodies[idx2].getVector();
 						this.bodies.splice(idx2, 1);
 						colArray[0].push(coor);
