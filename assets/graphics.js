@@ -1,6 +1,4 @@
 getImages = function() {
-	var baseImage = new Image();
-	baseImage.src = 'assets/space_bg.jpg';
 
 	var sunImages = new Array(8);
 	for (var i = 0; i < 8; i++) {
@@ -26,20 +24,27 @@ getImages = function() {
 		moonImages[i].src = 'assets/bodies/moon_' + i.toString() + '.png';
 	}
 
+	var images = {};
+
+	images["star"] = sunImages;
+	images["glow"] = glowImages;
+	images["planet"] = planetImages;
+	images["moon"] = moonImages;
+
+	return images;
+}
+
+var getExplosionFrames = function() {
   var explosionImages = new Array(16);
   for (var i = 0; i < 16; i++) {
     explosionImages[i] = new Image();
     explosionImages[i].src = 'assets/explosion/' + i.toString() + '.png';
   }
+  return explosionImages;
+}
 
-	var images = {};
-
-	images["background"] = [baseImage];
-	images["star"] = sunImages;
-	images["glow"] = glowImages;
-	images["planet"] = planetImages;
-	images["moon"] = moonImages;
-  images["explosion"] = explosionImages;
-
-	return images;
+var getBackgroundImage = function() {
+	var baseImage = new Image();
+	baseImage.src = 'assets/space_bg.jpg';
+  return baseImage;
 }

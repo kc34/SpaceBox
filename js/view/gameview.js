@@ -1,19 +1,22 @@
 "use strict";
+
+/**
+ * TODO: Throw out layers, have a camera?
+ */
 var GameView = function(model) {
 	this.model = model;
 	Panel.call(this, 0, 0, window.innerWidth, window.innerHeight);
 	this.center = Vector.fromComponents(0, 0);
+  this.backgroundLayerCenter = Vector.fromComponents(0, 0);
 	this.scale = 1;
-	this.images = getImages();
-
-	this.sunResize = 4.0 / 3.0;
-	this.planetResize = 4.0 / 3.0
-	this.moonResize = 3.0 / 2.0;
+  this.backgroundLayerScale = 1;
+  this.explosionFrames = getExplosionFrames();
+  this.backgroundImage = getBackgroundImage();
 
 	this.scalingFactor = 1.1;
 
 	this.music = new Audio("assets/one_sly_move.mp3");
-	this.music.play();
+	//this.music.play();
 
 	this.name = "I am a GameView." // Placeholder name.
 	this.mouseState = null;
@@ -31,105 +34,70 @@ var GameView = function(model) {
 	 */
 	this.drawPanel = function(ctx, windowX, windowY) {
 
+    // Start by drawing the background (and clearing the screen!);
 		this.drawBackground(ctx);
 
-		myModel.getBodies().forEach(function(obj) {this.drawObject(ctx, obj)}, this);
+    // Draw each object.
+		myModel.getBodies().forEach(function(obj) {
+      obj.accept(DrawAlgo, [ctx, this]);
+    }, this);
 
+    // Draw each explosion
     myModel.explosions.forEach(function(obj) {
       var screenVector = this.modelToViewCoordinate(obj.positionVector);
       var explosionRadius = 50 / this.scale;
-      var x = screenVector.x //
-      var y = screenVector.y //
-      ctx.drawImage(this.images.explosion[obj.getSkinID()], x - explosionRadius, y - explosionRadius, 2 * explosionRadius, 2 * explosionRadius);
-
+      GameView.drawImageAt(ctx, this.explosionFrames[obj.getSkinID()], screenVector, explosionRadius);
     }, this);
 
-		if (this.getGhostBody(ctx) != null) {
-			this.drawObject(ctx, this.getGhostBody(ctx));
+    /*
+    If the mouse has been down past the panning threshold, then the user is trying
+    to create a new Body. Check for this, and draw the ghost body as needed.
+    */
+		var t = new Date();
+		t -= this.mousedownTime;
+		t /= 1000;
+		if (t > 0.25) {
+      if (this.mouseState == "MOVE" || this.mouseState == "DOWN") {
+        if (this.mouseState == "MOVE") {
+    			ctx.strokeStyle = "#FFFFFF";
+    			ctx.beginPath();
+    			ctx.moveTo(this.mousedownLocation.x, this.mousedownLocation.y);
+    			ctx.lineTo(this.mouseLocation.x, this.mouseLocation.y);
+    			ctx.stroke();
+  		  } else if (this.mouseState == "DOWN") {
+          this.newBodyTime = t;
+  			}
+        var modelVector = this.viewToModelCoordinate(this.mousedownLocation);
+        var ghostObject = GameView.createBody(modelVector, Vector.ZERO, this.newBodyTime, this.rand);
+        ghostObject.accept(DrawAlgo, [ctx, this]);
+      }
 		}
 
   }
 
   this.drawBackground = function(ctx) {
-		var pictureSize = 2000 / Math.pow(this.scale, 0.2);
-		for (var i = -10; i < 10; i++) {
-			for (var j = -10; j < 10; j++) {
-				var topLeft = Vector.fromComponents(i, j).scMult(pictureSize).add(this.center.scMult(-0.1 / this.scale));
-				ctx.drawImage(this.images["background"][0], topLeft.x, topLeft.y, pictureSize, pictureSize);
-			}
-		}
+
+    var screenVector = this.backgroundToViewCoordinate(Vector.fromComponents(0, 0));
+    var pictureSize = 2000 / this.backgroundLayerScale;
+
+    for (var i = -5; i < 6; i++) {
+      for (var j = -5; j < 6; j++) {
+        GameView.drawImageAt(ctx, this.backgroundImage, screenVector.add(Vector.fromComponents(i, j).scMult(pictureSize)), pictureSize / 2);
+      }
+    }
+
+    ctx.fillStyle ="#FF0000";
+    ctx.rect(screenVector.x, screenVector.y, 10, 10);
+    ctx.fill();
+
+    ctx.fillStyle ="#0000FF";
+    var screenVector = this.modelToViewCoordinate(Vector.fromComponents(0, 0))
+    ctx.rect(screenVector.x, screenVector.y, 10, 10);
+    ctx.fill();
 	}
 
 	this.drawObject = function(ctx, myObject) {
-
-		// First order of business: know where to draw.
-		var positionVector = myObject.positionVector;
-		var screenVector = this.modelToViewCoordinate(positionVector);
-
-		var screenRadius = myObject.radius / this.scale;
-		var objectType;
-		var skinId;
-
-		if (Star.prototype.isPrototypeOf(myObject)) {
-			screenRadius *= this.sunResize;
-			screenRadius = Math.max(screenRadius, 20);
-			objectType = "star";
-			var skinData = GameView.starColorFromRadius(myObject.radius);
-			var skinId = Math.floor(skinData);
-			var progressToNext = skinData - skinId;
-			var val1 = 1 - progressToNext;
-			var val2 = progressToNext;
-			var vector = screenVector;
-
-			var radius = screenRadius;
-			var glowRadius = radius * 8 / 5
-
-			// Draw next.
-			ctx.globalAlpha = val1;
-			ctx.drawImage(this.images.glow[skinId],
-				vector.x - glowRadius, vector.y - glowRadius,
-				2 * glowRadius, 2 * glowRadius);
-
-			if (progressToNext != 0) {
-				ctx.globalAlpha = val2;
-				ctx.drawImage(this.images.glow[skinId + 1],
-					vector.x - glowRadius, vector.y - glowRadius,
-					2 * glowRadius, 2 * glowRadius);
-			}
-			// Draw actual.
-			ctx.globalAlpha = val1;
-			ctx.drawImage(this.images.star[skinId],
-				vector.x - radius, vector.y - radius,
-				2 * radius, 2 * radius);
-			if (progressToNext != 0) {
-
-				ctx.globalAlpha = val2;
-
-				ctx.drawImage(this.images.star[skinId + 1],
-					vector.x - radius, vector.y - radius,
-					2 * radius, 2 * radius);
-			}
-			ctx.globalAlpha = 1;
-
-		} else if (Planet.prototype.isPrototypeOf(myObject)) {
-			screenRadius *= this.planetResize;
-			screenRadius = Math.max(screenRadius, 5);
-			objectType = "planet";
-			var skinId = myObject.img;
-			ctx.drawImage(this.images[objectType][skinId],
-				screenVector.x - screenRadius,
-				screenVector.y - screenRadius,
-				2 * screenRadius, 2 * screenRadius);
-		} else if (Moon.prototype.isPrototypeOf(myObject)) {
-			screenRadius *= this.moonResize;
-			screenRadius = Math.max(screenRadius, 2);
-			objectType = "moon";
-			var skinId = myObject.img;
-			ctx.drawImage(this.images[objectType][skinId],
-				screenVector.x - screenRadius,
-				screenVector.y - screenRadius,
-				2 * screenRadius, 2 * screenRadius);
-		}
+    myObject.accept(DrawAlgo, [ctx, this]);
 	}
 
 	/**
@@ -139,16 +107,21 @@ var GameView = function(model) {
 	 */
 	this.zoomAt = function(screenVector, direction) {
 		if (direction == "OUT") {
-			if (this.scale < 10) {
-				// First, we need the mouse position in coordinate
-				var mouseCoordinate = this.viewToModelCoordinate(screenVector);
-				// Next, we need to measure the offset of that from the view center.
-				var mouseOffset = mouseCoordinate.subtract(this.center);
-				// Since we zoom out, the distance will become greater by the scaling factor.
-				var scaledOffset = mouseOffset.scMult(this.scalingFactor);
-				this.center = mouseCoordinate.subtract(scaledOffset);
-				this.scale *= this.scalingFactor;
-			}
+			// First, we need the mouse position in coordinate
+			var mouseCoordinate = this.viewToModelCoordinate(screenVector);
+			// Next, we need to measure the offset of that from the view center.
+			var mouseOffset = mouseCoordinate.subtract(this.center);
+			// Since we zoom out, the distance will become greater by the scaling factor.
+			var scaledOffset = mouseOffset.scMult(this.scalingFactor);
+			this.center = mouseCoordinate.subtract(scaledOffset);
+			this.scale *= this.scalingFactor;
+
+      var v1 = this.viewToBackgroundCoordinate(screenVector);
+      var v2 = v1.subtract(this.backgroundLayerCenter);
+      var v3 = v2.scMult(Math.pow(this.scalingFactor, 0.5));
+      this.backgroundLayerCenter = v1.subtract(v3)
+      this.backgroundLayerScale *= Math.pow(this.scalingFactor, 0.5);
+      console.log(this.backgroundLayerScale);
 		} else {
 			// First, we need the mouse position in coordinate
 			var mouseCoordinate = this.viewToModelCoordinate(screenVector);
@@ -158,43 +131,31 @@ var GameView = function(model) {
 			var scaledOffset = mouseOffset.scMult(1 / this.scalingFactor);
 			this.center = mouseCoordinate.subtract(scaledOffset);
 			this.scale /= this.scalingFactor;
+
+      var v1 = this.viewToBackgroundCoordinate(screenVector);
+      var v2 = v1.subtract(this.backgroundLayerCenter);
+      var v3 = v2.scMult(1 / Math.pow(this.scalingFactor, 0.5));
+      this.backgroundLayerCenter = v1.subtract(v3)
+      this.backgroundLayerScale /= Math.pow(this.scalingFactor, 0.5);
 		}
+
+    if (this.scale > 100) {
+      this.scale = 100;
+    }
+
+    if (this.scale < 0.01) {
+      this.scale = 0.01;
+    }
 	}
 
 	this.keyToFunctionMap = {
-		"&" : function(gameView) { gameView.scale /= 1.5; },
-		"(" : function(gameView) { gameView.scale = (gameView.scale > 10) ? gameView.scale : gameView.scale * 1.5; },
+		"&" : function(gameView) { gameView.scale /= 1.1; },
+		"(" : function(gameView) { gameView.scale *= 1.1; },
 		" " : function(gameView) { gameView.model.running = !(gameView.model.running); },
 		"S" : function(gameView) { gameView.center.y -= gameView.scale * 100; },
 		"W" : function(gameView) { gameView.center.y += gameView.scale * 100; },
 		"A" : function(gameView) { gameView.center.x -= gameView.scale * 100; },
 		"D" : function(gameView) { gameView.center.x += gameView.scale * 100; }
-	}
-
-	this.getGhostBody = function(ctx) {
-		// Time to draw a tentative star.
-		if (this.mouseState == "DOWN") {
-			// wait for time to be bigger than 0.25 seconds
-			var t = new Date();
-			t -= this.mousedownTime;
-			t /= 1000;
-			if (t > 0.25) {
-				var planeVector = this.viewToModelCoordinate(this.mousedownLocation);
-				var ghostObject = GameView.createBody(planeVector, Vector.ZERO, t, this.rand);
-				return ghostObject;
-			}
-		} else if (this.mouseState == "MOVE") {
-			ctx.strokeStyle = "#FFFFFF";
-			ctx.beginPath();
-			ctx.moveTo(this.mousedownLocation.x, this.mousedownLocation.y);
-			ctx.lineTo(this.mouseLocation.x, this.mouseLocation.y);
-			ctx.stroke();
-			var planeVector = this.viewToModelCoordinate(this.mousedownLocation);
-			var ghostObject = GameView.createBody(planeVector, Vector.ZERO, this.newBodyTime, this.rand);
-			return ghostObject;
-		} else {
-			return null;
-		}
 	}
 }
 
@@ -202,6 +163,10 @@ GameView.prototype = Object.create(Panel.prototype);
 
 GameView.prototype.draw = function(ctx, offsetX, offsetY) {
   Panel.prototype.draw.call(this, ctx, 0, 0);
+}
+
+GameView.prototype.pan = function(deltaVector) {
+  this.center = this.center.subtract(deltaVector);
 }
 
 GameView.prototype.mousedownHandler = function(event) {
@@ -257,9 +222,18 @@ GameView.prototype.mousemoveHandler = function(event) {
         this.newBodyTime = (new Date() - this.mousedownTime) / 1000;
       }
     } else if (this.mouseState == "PAN" || (timeSinceMouseDown <= 0.25 && dist > this.GROW_MOVE_STOP_DIST)) {
-      var coordinateShift = this.viewToModelCoordinate(event).subtract(this.viewToModelCoordinate(this.mouseLocation))
-      this.center = this.center.subtract(coordinateShift);
+      // var coordinateShift = this.viewToModelCoordinate(event).subtract(this.viewToModelCoordinate(this.mouseLocation))
+      //
+      var coordinateShift = event.subtract(this.mouseLocation).scMult(this.scale);
+      this.pan(coordinateShift);
+      // this.center = this.center.subtract(coordinateShift);
+
+      var v1 = this.viewToBackgroundCoordinate(event).subtract(this.viewToBackgroundCoordinate(this.mouseLocation))
+      this.backgroundLayerCenter = this.backgroundLayerCenter.subtract(v1.scMult(0.5));
       this.mouseState = "PAN";
+
+      console.log(this.backgroundLayerCenter)
+      console.log(this.center)
     }
   }
   this.mouseLocation = event;
@@ -273,35 +247,40 @@ GameView.prototype.mousewheelHandler = function(event) {
   }
 }
 
-GameView.prototype.modelToViewCoordinate = function(planeVector) {
+GameView.prototype.modelToViewCoordinate = function(modelVector) {
 	/**
 	 * ScreenVec = (PlaneVec - ViewCenter) / Scale + ScreenCenter
 	 */
-	var windowCenter = Vector.fromComponents(window.innerWidth / 2, window.innerHeight / 2);
-	var screenVector = planeVector.subtract(this.center).scMult(1 / this.scale).add(windowCenter);
-	return screenVector;
+	var viewCenter = Vector.fromComponents(window.innerWidth / 2, window.innerHeight / 2);
+	var viewVector = modelVector.subtract(this.center).scMult(1 / this.scale).add(viewCenter);
+	return viewVector;
 }
 
-GameView.prototype.viewToModelCoordinate = function(screenVector) {
+GameView.prototype.viewToModelCoordinate = function(viewVector) {
 	/**
 	 * PlaneVec = (ScreenVec - ScreenCenter) * Scale + ViewCenter
 	 */
-	var windowCenter = Vector.fromComponents(window.innerWidth / 2, window.innerHeight / 2);
-	var planeVector = screenVector.subtract(windowCenter).scMult(this.scale).add(this.center);
-	return planeVector;
+	var viewCenter = Vector.fromComponents(window.innerWidth / 2, window.innerHeight / 2);
+	var modelVector = viewVector.subtract(viewCenter).scMult(this.scale).add(this.center);
+	return modelVector;
 }
 
-GameView.starColorFromRadius = function(radius) {
-	if (radius < GameView.timeToRadius(2.5)) {
-		return 7;
-	} else if (radius < GameView.timeToRadius(15)) {
-		var bigRadius = GameView.timeToRadius(15);
-		var smallRadius = GameView.timeToRadius(2.5);
-		var color = (bigRadius - radius) / (bigRadius - smallRadius) * 7;
-		return color;
-	} else {
-		return 0;
-	}
+GameView.prototype.backgroundToViewCoordinate = function(backgroundVector) {
+	/**
+	 * ScreenVec = (PlaneVec - ViewCenter) / Scale + ScreenCenter
+	 */
+	var viewCenter = Vector.fromComponents(window.innerWidth / 2, window.innerHeight / 2);
+	var viewVector = backgroundVector.subtract(this.backgroundLayerCenter).scMult(1 / this.backgroundLayerScale).add(viewCenter);
+	return viewVector;
+}
+
+GameView.prototype.viewToBackgroundCoordinate = function(viewVector) {
+	/**
+	 * PlaneVec = (ScreenVec - ScreenCenter) * Scale + ViewCenter
+	 */
+	var viewCenter = Vector.fromComponents(window.innerWidth / 2, window.innerHeight / 2);
+	var backgroundVector = viewVector.subtract(viewCenter).scMult(this.backgroundLayerScale).add(this.backgroundLayerCenter);
+	return backgroundVector;
 }
 
 GameView.timeToRadius = function(t) {
@@ -320,17 +299,21 @@ GameView.timeToRadius = function(t) {
 GameView.createBody = function(positionVector, velocityVector, t, rand) { // Remind Kevin to edit values
 	velocityVector = velocityVector.scMult(2);
 	var radius = GameView.timeToRadius(t);
-	if (t > 2)
-	{
+	if (t > 2) {
 		var newBody = new Star(positionVector, velocityVector, radius); // Remind Kevin to put stars.
-	}
-	else if (t < 1)
-	{
+	} else if (t < 1) {
 		var newBody = new Moon(positionVector, velocityVector, radius, rand);
-	}
-	else
-	{
+	} else {
 		var newBody = new Planet(positionVector, velocityVector, radius, rand);
 	}
 	return newBody;
+}
+
+GameView.drawImageAt = function(ctx, image, viewPosition, viewRadius) {
+  ctx.drawImage(
+    image,
+    viewPosition.x - viewRadius,
+    viewPosition.y - viewRadius,
+    2 * viewRadius,
+    2 * viewRadius);
 }

@@ -27,6 +27,10 @@ var Star = function(positionVector, velocityVector, t) {
 	this.type = 'Star';
 	this.mass = Body.STAR_DENSITY * Math.pow(this.radius, 3);
 }
+Star.prototype.accept = function(visitor, args) {
+  args.push(this);
+  visitor.starMethod(args);
+}
 
 var Planet = function(positionVector, velocityVector, t, r) {
 	Body.call(this, positionVector, velocityVector, t);
@@ -34,10 +38,18 @@ var Planet = function(positionVector, velocityVector, t, r) {
 	this.mass = Body.PLANET_DENSITY * Math.pow(this.radius, 3);
 	this.img = Math.floor(r * 5);
 }
+Planet.prototype.accept = function(visitor, args) {
+  args.push(this);
+  visitor.planetMethod(args);
+}
 
 var Moon = function(positionVector, velocityVector, t, r) {
 	Body.call(this, positionVector, velocityVector, t);
 	this.type = 'Moon';
 	this.mass = Body.MOON_DENSITY * Math.pow(this.radius,3);
 	this.img = Math.floor(r * 2);
+}
+Moon.prototype.accept = function(visitor, args) {
+  args.push(this);
+  visitor.moonMethod(args);
 }
