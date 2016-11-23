@@ -29,6 +29,8 @@ var GameView = function(model) {
 	this.rand = null;
 	this.ghostObject = null;
 
+  this.touchCache = [];
+
 	/**
 	 * This function will draw everything!
 	 */
@@ -106,24 +108,16 @@ var GameView = function(model) {
 	 * consistent with planeVector, but scale will change by
 	 * scalingFactor.
 	 */
-	this.zoomAt = function(screenVector, direction) {
-    if (direction == "OUT") {
-      if (this.camera.z > 25000)
-        return;
-      var mouseCoordinate = this.viewToModelCoordinate(screenVector);
-      var mouseOffset = mouseCoordinate.subtract(this.getCenter());
-      var scaledOffset = mouseOffset.scMult(this.scalingFactor);
-      this.setCenter(mouseCoordinate.subtract(scaledOffset));
-      this.camera.z *= this.scalingFactor;
-    } else {
-      if (this.camera.z < 10)
-        return;
-      var mouseCoordinate = this.viewToModelCoordinate(screenVector);
-      var mouseOffset = mouseCoordinate.subtract(this.getCenter());
-      var scaledOffset = mouseOffset.scMult(1 / this.scalingFactor);
-      this.setCenter(mouseCoordinate.subtract(scaledOffset));
-      this.camera.z /= this.scalingFactor;
-    }
+	this.zoomAt = function(screenVector, zoom) {
+    if (this.camera.z * zoom < 10)
+      return;
+    if (this.camera.z * zoom > 25000)
+      return;
+    var mouseCoordinate = this.viewToModelCoordinate(screenVector);
+    var mouseOffset = mouseCoordinate.subtract(this.getCenter());
+    var scaledOffset = mouseOffset.scMult(zoom);
+    this.setCenter(mouseCoordinate.subtract(scaledOffset));
+    this.camera.z *= zoom;
 	}
 
 	this.keyToFunctionMap = {
@@ -240,10 +234,51 @@ GameView.prototype.mousemoveHandler = function(event) {
 
 GameView.prototype.mousewheelHandler = function(event) {
   if (event.wheelDelta > 0) {
-    this.zoomAt(Vector.fromComponents(event.clientX, event.clientY), "IN");
+    this.zoomAt(Vector.fromComponents(event.clientX, event.clientY), 1 / this.scalingFactor);
   } else {
-    this.zoomAt(Vector.fromComponents(event.clientX, event.clientY), "OUT");
+    this.zoomAt(Vector.fromComponents(event.clientX, event.clientY), this.scalingFactor);
   }
+}
+
+GameView.prototype.touchstartHandler = function(event) {
+  if (this.touchCache.length == 0) {
+    this.mousedownHandler(event);
+  }
+  this.touchCache.push(event);
+  console.log(this.touchCache);
+}
+
+GameView.prototype.touchmoveHandler = function(event) {
+  if (this.touchCache.length == 1) {
+    var identifier = event.identifier;
+    if (identifier == 0) {
+      this.mousemoveHandler(event);
+    }
+  } else if (this.touchCache.length > 1) {
+    var identifier = event.identifier;
+    var oldVec0 = Vector.fromComponents(this.touchCache[0].clientX, this.touchCache[0].clientY);
+    var oldVec1 = Vector.fromComponents(this.touchCache[1].clientX, this.touchCache[1].clientY);
+    var oldDist = Vector.distance(oldVec0, oldVec1);
+    if (identifier == 0) {
+      var newVec0 = Vector.fromComponents(event.clientX, event.clientY);
+      var newDist = Vector.distance(newVec0, oldVec1);
+      this.zoomAt(oldVec1, newDist / oldDist);
+    } else if (identifier == 1) {
+      var newVec1 = Vector.fromComponents(event.clientX, event.clientY);
+      var newDist = Vector.distance(oldVec0, newVec1);
+      this.zoomAt(oldVec0, newDist / oldDist);
+    }
+
+  }
+}
+
+GameView.prototype.touchendHandler = function(event) {
+  if (this.touchCache.length == 1) {
+    this.mouseupHandler(event);
+  }
+  this.touchCache = this.touchCache.filter(function(touchEvent) {
+    return touchEvent.identifier == this.identifier
+  }, this);
 }
 
 GameView.prototype.modelToViewCoordinate = function(modelVector) {
