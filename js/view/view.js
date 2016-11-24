@@ -7,7 +7,7 @@ var View = function(model) {
 	this.model = model;
 	ViewPanel.call(this, document.getElementById("myCanvas"));
 
-	var gamePanel = new GameView(model);
+	var gamePanel = new GamePanel(model);
 	gamePanel.z_index = -1;
 	this.addComponent("gamePanel", gamePanel);
 

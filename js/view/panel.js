@@ -1,15 +1,13 @@
 "use strict";
 /**
- * Panel 0.1.3.1
+ * Panel 0.1.3.2
  *
  * By Kevin Chang
- * + touchstart now calls mouseDown and click. Dangerous?
- * + runOnTopComponent: functional
- * + Added addEventListener calls in ViewPanel.
+ * + touchevents have own delegators
  *
  * TODO:
- * + Dispatch touch events
  * + Focus to know where to send key events
+ * + Consider consolidating mouse and touch into pointer events
  */
 
 /**
@@ -212,14 +210,6 @@ function ViewPanel(canvas) {
 
   this.canvas.addEventListener('touchstart', function(event) {
   	event.preventDefault(); // not a click!
-    /*
-    var touches = event.changedTouches;
-
-  	if (touches.length > 0)	{
-      instance.clickHandler({clientX: touches[0].clientX, clientY: touches[0].clientY});
-  		instance.mousedownHandler({clientX: touches[0].clientX, clientY: touches[0].clientY});
-  	}
-    */
     for (var touchID in event.changedTouches) {
       instance.touchstartHandler(event.changedTouches[touchID]);
     }
@@ -227,13 +217,6 @@ function ViewPanel(canvas) {
 
   this.canvas.addEventListener('touchmove', function(event) {
   	event.preventDefault(); // not a click!
-  	/*
-    var touches = event.changedTouches;
-
-  	if (touches.length > 0)	{
-  		instance.mousemoveHandler({clientX: touches[0].clientX, clientY: touches[0].clientY});
-  	}
-    */
     for (var touchID in event.changedTouches) {
       instance.touchmoveHandler(event.changedTouches[touchID]);
     }
@@ -242,11 +225,6 @@ function ViewPanel(canvas) {
   this.canvas.addEventListener('touchend', function(event) {
   	event.preventDefault(); // not a click!
   	var touches = event.changedTouches;
-    /*
-  	if (touches.length > 0)	{
-  		instance.mouseupHandler({clientX: touches[0].clientX, clientY: touches[0].clientY});
-  	}
-    */
     for (var touchID in event.changedTouches) {
       instance.touchendHandler(event.changedTouches[touchID]);
     }
